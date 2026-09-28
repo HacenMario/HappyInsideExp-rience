@@ -1,0 +1,159 @@
+==================================================
+Happy inside expérience — النسخة النهائية v6 / Version finale v6
+مخيم الأخصائيين النفسيين في الجزائر — 16–19 أكتوبر 2026
+جاهز للنشر على Vercel و Railway ✈️ / Prêt pour Vercel & Railway
+==================================================
+
+【 المتطلبات / Prérequis 】
+- Node.js 20.9 أو أحدث / Node.js 20.9 ou plus récent (npm)
+- MongoDB: مثبّت محليًا أو رابط Atlas في .env
+  MongoDB installé en local, ou une URL Atlas dans .env
+
+【 التشغيل المحلي — يعمل على Windows / Linux / macOS 】
+
+  npm install
+  npm run dev
+
+  ثم افتح / puis ouvrir : http://localhost:3000
+
+✔ تم تصحيح سكريبتات npm لتعمل على Windows (PowerShell / cmd)
+  بدون أخطاء (تمت إزالة tee و cp و NODE_ENV= من الأوامر).
+✔ Scripts npm corrigés pour Windows (PowerShell / cmd) —
+  les commandes Unix (tee, cp, NODE_ENV=) ont été retirées.
+
+【 الإنتاج / Production 】
+     npm run build
+     npm run start        ← يحترم متغير PORT تلقائيًا / respecte PORT
+
+【 ☁️ النشر على Vercel و Railway / Déploiement cloud 】
+
+دليل خطوة بخطوة كامل في ملف README.md (بالعربية + الفرنسية):
+Guide complet pas à pas dans README.md:
+
+  1) MongoDB Atlas مجاني → انسخ رابط الاتصال إلى MONGODB_URI
+     MongoDB Atlas gratuit → copiez l'URL dans MONGODB_URI
+  2) Vercel:  Import من GitHub + المتغيرات البيئية → Deploy
+     Vercel: Import depuis GitHub + variables d'environnement
+  3) Railway: نفس المتغيرات + MONGO_URL جاهز من خدمة MongoDB
+     Railway: mêmes variables + MONGO_URL fourni par le service MongoDB
+  4) فحص الصحة / Health-check: /api/health  →  {"status":"ok","db":"connected"}
+
+✔ القفل الحتمي package-lock.json مضمّن → npm ci يعطي نفس الإصدارات
+  تمامًا على كل منصّة (vercel.json و railway.json و Dockerfile جاهزة).
+✔ Lockfile déterministe package-lock.json inclus → npm ci reproduit
+  exactement les mêmes versions partout (vercel.json, railway.json,
+  Dockerfile inclus).
+
+【 ملف .env — كل المفاتيح في مكان واحد 】
+
+عدّل ملف .env مباشرة ثم أعد التشغيل (على Vercel/Railway: نفس
+المتغيرات تُضاف في Settings → Environment Variables):
+Modifiez directement le fichier .env puis redémarrez (sur Vercel/
+Railway: mêmes variables dans Settings → Environment Variables):
+
+1) قاعدة البيانات / Base de données:
+     MONGODB_URI=mongodb://127.0.0.1:27017     (أو / ou MongoDB Atlas)
+     MONGODB_DB=happy_inside_experience
+
+2) حساب الأديمن / Compte administrateur:
+     ADMIN_PHONE=0555555555
+     ADMIN_PASSWORD=HappyInside@2026
+     ADMIN_FULLNAME=مدير الموقع / Administrateur
+   ✔ يُطبَّق فورًا حتى لو كانت القاعدة مهيأة سلفًا —
+     غيّر الرقم/كلمة المرور وأعد التشغيل فقط.
+   ✔ Synchronisé automatiquement à chaque démarrage,
+     même si la base existe déjà.
+
+3) مفتاح الجلسات / Secret des sessions:
+     AUTH_SECRET=<مولَّد عشوائيًا / généré aléatoirement>
+   ⚠ لا تشاركه مع أحد / ne le partagez jamais
+     openssl rand -hex 48
+
+4) أمان الكوكي / Sécurité du cookie (اختياري / optionnel):
+     COOKIE_SECURE=true|false
+   افتراضيًا آمن (Secure) في الإنتاج — اضبط false فقط للـ HTTP الذاتي.
+   Secure par défaut en production — false uniquement en HTTP simple.
+
+5) إشعارات Push / Notifications push (VAPID):
+     VAPID_PUBLIC_KEY=<مولَّدة / générée>
+     VAPID_PRIVATE_KEY=<مولَّدة / générée>
+     VAPID_SUBJECT=mailto:contact@happyinside-experience.dz
+   لإعادة التوليد / pour régénérer:
+     npm exec -p web-push -- web-push generate-vapid-keys
+
+6) معلومات التواصل (أول تهيئة فقط — ثم من لوحة التحكم):
+   Contact (1er lancement uniquement — ensuite via le
+   tableau de bord admin):
+     WHATSAPP_NUMBER / CONTACT_EMAIL / FACEBOOK_URL / INSTAGRAM_URL
+
+7) المساعد الذكي (اختياري — للنشر السحابي):
+   Assistant intelligent (optionnel — déploiement cloud):
+     AI_API_URL  = https://api.openai.com/v1   (أو Groq / OpenRouter)
+     AI_API_KEY  = sk-...
+     AI_MODEL    = gpt-4o-mini
+   إن تُرك فارغًا يرد المساعد برسالة توضيحية لطيفة دون أخطاء.
+   Si vide, l'assistant répond avec un message de repli gracieux.
+
+【 قاعدة البيانات / Base de données 】
+تُهيَّأ تلقائيًا عند أول تشغيل (الأديمن، الإعدادات، مقدّمو
+الأنشطة الثلاثة، الأسئلة الشائعة، الإعلان الترحيبي) — قفل ذرّي
+يمنع التكرار نهائيًا + فهارس فريدة.
+Création automatique au premier lancement (admin, paramètres,
+3 animateurs, FAQ, annonce) — verrou atomique anti-doublons +
+index uniques.
+
+【 حساب المدير الافتراضي / Admin par défaut 】
+- الهاتف / Téléphone  : 0555555555
+- كلمة المرور / Mot de passe : HappyInside@2026
+(غيّرها من .env أو من متغيرات Vercel/Railway / changez-les dans .env
+ou dans les variables Vercel/Railway)
+
+【 سجل التصحيحات / Journal des corrections 】
+- v6: جاهزية النشر السحابي — package-lock.json حتمي + engines Node 20.9
+  + إزالة prisma غير المستخدم (تثبيت أسرع وأخف) + start يحترم PORT
+  (Railway/Docker) + vercel.json (منطقة cdg1) + railway.json (فحص صحة
+  /api/health وإعادة تشغيل تلقائية) + Dockerfile و .dockerignore
+  + .env.example موثّق كاملًا + README.md دليل نشر بالعربية والفرنسية.
+- v6: كوكي الجلسة أصبح Secure تلقائيًا في الإنتاج (HTTPS على
+  Vercel/Railway) مع إمكانية التحكم عبر COOKIE_SECURE.
+- v6: اتصال MongoDB يُخزَّن في globalThis في كل البيئات — بدون تسريبات
+  اتصالات على السيرفرلس (Vercel) + إعادة محاولة ذكية عند فشل الإقلاع.
+- v6: المساعد الذكي جاهز للسحابة: دعم أي مزوّد متوافق مع OpenAI عبر
+  AI_API_URL/AI_API_KEY/AI_MODEL + ردّ احتياطي ثنائي اللغة بدل الخطأ 500
+  عند غياب المزوّد.
+- v6: نقطة فحص صحة /api/health (حالة قاعدة البيانات + زمن الاستجابة).
+- v6: ضغط الصور تلقائيًا في المتصفح قبل كل رفع (اللوغو، الصور، الصور
+  الشخصية، الوسائط) — الطلبات تبقى أصغر بكثير من حد Vercel 4.5MB
+  وقاعدة البيانات آمنة تحت حد 16MB.
+- v6: déploiement cloud prêt — lockfile npm déterministe + engines
+  Node 20.9 + retrait de prisma inutilisé + start respectant PORT +
+  vercel.json (région cdg1) + railway.json (healthcheck /api/health,
+  restart auto) + Dockerfile/.dockerignore + .env.example documenté +
+  README.md guide de déploiement AR/FR.
+- v6: cookie de session Secure automatiquement en production (HTTPS),
+  contrôle via COOKIE_SECURE.
+- v6: client MongoDB mis en cache globalThis dans tous les environnements
+  (aucune fuite de connexions en serverless) + retry intelligent.
+- v6: assistant IA cloud-ready — fournisseur compatible OpenAI via
+  AI_API_URL/AI_API_KEY/AI_MODEL + réponse de repli bilingue au lieu
+  d'une erreur 500.
+- v6: endpoint de santé /api/health (état DB + latence).
+- v6: compression automatique des images dans le navigateur avant tout
+  envoi (logo, images, avatars, médias) — bien sous la limite Vercel
+  de 4,5 Mo et sous la limite MongoDB de 16 Mo.
+- v5: صورتا البرنامج وصورة الغلاف قابلة للتغيير من الإعدادات + عرض
+  مكبّر (Zoom) بالضغط على الصورة + حذف الوسائط فرديًا وجماعيًا.
+- v5: images programme + couverture modifiables dans les paramètres +
+  visionneuse zoomable + suppression des médias unitaire et globale.
+- v4: إصلاح زر إغلاق الإعلان العائم + tel:/mailto: في كل الموقع + PWA
+  قابلة للتثبيت + إشعارات + رفع متعدد + إصلاح حرف-واحد + دورة الدفع
+  (قيد الانتظار ← تم الدفع) + بطاقات المبالغ + اللوغو والشعار.
+- v4: annonce flottante (clic) + contacts cliquables + PWA installable +
+  notifications + upload multiple + correctif "une lettre à la fois" +
+  cycle de paiement + cartes de montants + logo & slogan.
+- v3: إصلاح تكرار بيانات الزرع التلقائي (قفل ذرّي seed_meta + تنظيف
+  تلقائي للمكررات القديمة + فهارس فريدة على الهاتف والإعدادات).
+- v3: correction du doublement des données au premier démarrage
+  (verrou atomique seed_meta + nettoyage automatique + index uniques).
+- v2: سكريبتات npm متوافقة مع Windows + ملف .env كامل.
+- v2: scripts npm compatibles Windows + fichier .env complet.
