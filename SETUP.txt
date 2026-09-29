@@ -1,8 +1,29 @@
 ==================================================
-Happy inside expérience — النسخة النهائية v8 / Version finale v8
+Happy inside expérience — النسخة النهائية v9 / Version finale v9
 مخيم الأخصائيين النفسيين في الجزائر — 16–19 أكتوبر 2026
 جاهز للنشر على Vercel و Railway ✈️ / Prêt pour Vercel & Railway
 ==================================================
+
+【 جديد في v9 / Nouveau dans v9 — إصلاح فشل البناء على Railway/Docker 】
+✔ استبدال next/font/google بخطوط مستضافة محلياً داخل المشروع
+  (public/fonts/): Outfit Variable + Cairo Variable (متغيرات كاملة
+  بجودة مطابقة). أصبح next build يعمل بدون أي اتصال بالإنترنت —
+  يحل خطأ «next/font/google queries have exactly one entry»
+  الذي كان يُفشل البناء على Railway/Nixpacks/Docker.
+✔ إزالة مفتاح eslint من next.config.ts (لم يعد مدعوماً في Next 16 —
+  كان يسبب تحذيراً في سجل البناء).
+✔ تحميل الخطوط يصبح من نطاق موقعك نفسه (أسرع + خصوصية أفضل)،
+  مع preload تلقائي للخطوط الأساسية.
+✔ Remplacement de next/font/google par des polices auto-hébergées
+  dans le projet (public/fonts/) : Outfit Variable + Cairo Variable.
+  `next build` fonctionne maintenant 100% hors-ligne — corrige
+  l'erreur « next/font/google queries have exactly one entry »
+  qui faisait échouer le build Railway/Nixpacks/Docker.
+✔ Suppression de la clé eslint de next.config.ts (non supportée
+  par Next 16, provoquait un warning au build). Polices servies
+  depuis votre propre domaine (plus rapide + meilleure vie privée)
+  avec preload automatique.
+
 
 【 جديد في v8 / Nouveau dans v8 — الشات بوت يعمل بدون أي AI خارجي 】
 ✔ محرك معرفة محلي: المساعد الذكي يجيب الآن مباشرة من بيانات الموقع

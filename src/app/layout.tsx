@@ -1,20 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Cairo, Outfit } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/providers";
 
-const outfit = Outfit({
-  variable: "--font-sans-custom",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
-
-const cairo = Cairo({
-  variable: "--font-arabic-custom",
-  subsets: ["arabic", "latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
+/*
+ * Fonts are SELF-HOSTED (public/fonts/ + @font-face in globals.css).
+ * next/font/google was removed: it fetches Google Fonts during the build,
+ * which crashes `next build` in offline/restricted builders (Railway,
+ * Docker, some CI) with the Turbopack error
+ * "next/font/google queries have exactly one entry".
+ * React 19 hoists the <link rel="preload"> elements below into <head>.
+ */
+const fontPreloads = [
+  { href: "/fonts/cairo-arabic-wght-normal.woff2" },
+  { href: "/fonts/cairo-latin-wght-normal.woff2" },
+  { href: "/fonts/outfit-latin-wght-normal.woff2" },
+];
 
 export const metadata: Metadata = {
   title: "Happy inside expérience | مخيم الأخصائيين النفسيين في الجزائر",
@@ -68,7 +69,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${cairo.variable} antialiased bg-background text-foreground`}>
+      <body className="antialiased bg-background text-foreground">
+        {fontPreloads.map((font) => (
+          <link
+            key={font.href}
+            rel="preload"
+            href={font.href}
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+        ))}
         <Providers>
           {children}
           <Toaster />

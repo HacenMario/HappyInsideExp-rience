@@ -4,10 +4,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    // Lint is run separately (npm run lint) — never block cloud builds on it.
-    ignoreDuringBuilds: true,
-  },
+  // Note: the old `eslint: { ignoreDuringBuilds: true }` key was removed —
+  // Next.js 16 no longer recognizes it (build warning) and no longer runs
+  // ESLint during builds at all. Lint separately with `npm run lint`.
   reactStrictMode: false,
   poweredByHeader: false,
 };
