@@ -115,7 +115,7 @@ export default function LandingPage() {
     return () => window.removeEventListener("camp-settings-updated", handler);
   }, [loadCamp]);
 
-  const countdown = useCountdown(settings?.startDate || "2026-10-16T00:00:00.000Z");
+  const countdown = useCountdown(settings?.startDate || "2026-10-15T00:00:00.000Z");
   const slogan = settings ? (lang === "ar" ? settings.sloganAr : settings.sloganFr) : t.slogan;
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
   const heroSrc = settings?.heroImage || "/images/hero.png";
@@ -236,7 +236,7 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-xs font-black">{t.edition}</p>
-                      <p className="text-[10px] text-muted-foreground">16-19 / 10 / 2026</p>
+                      <p className="text-[10px] text-muted-foreground">15-19 / 10 / 2026</p>
                     </div>
                   </div>
                 </div>
