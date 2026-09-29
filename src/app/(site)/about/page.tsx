@@ -62,7 +62,7 @@ export default function AboutPage() {
             </div>
             <div className="mt-6 flex flex-wrap gap-2.5">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-xs font-bold shadow-sm ring-1 ring-border">
-                <CalendarDays className="h-4 w-4 text-brand" /> 16 - 19 / 10 / 2026
+                <CalendarDays className="h-4 w-4 text-brand" /> 15 - 19 / 10 / 2026
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-xs font-bold shadow-sm ring-1 ring-border">
                 <MoonStar className="h-4 w-4 text-brand-2" /> {t.hero.duration}
