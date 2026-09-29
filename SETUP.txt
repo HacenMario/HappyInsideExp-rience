@@ -1,8 +1,29 @@
 ==================================================
-Happy inside expérience — النسخة النهائية v6 / Version finale v6
+Happy inside expérience — النسخة النهائية v8 / Version finale v8
 مخيم الأخصائيين النفسيين في الجزائر — 16–19 أكتوبر 2026
 جاهز للنشر على Vercel و Railway ✈️ / Prêt pour Vercel & Railway
 ==================================================
+
+【 جديد في v8 / Nouveau dans v8 — الشات بوت يعمل بدون أي AI خارجي 】
+✔ محرك معرفة محلي: المساعد الذكي يجيب الآن مباشرة من بيانات الموقع
+  الحية (عدد المقاعد، التواريخ، السعر، المكان، البرنامج، المتحدثون،
+  الإعلانات، الأسئلة الشائعة) — فوري، مجاني، ويعمل دائماً حتى بدون
+  أي مفتاح Groq/OpenAI.
+✔ الأسئلة الشائعة (FAQ) التي يضيفها المدير من لوحة التحكم تصبح
+  تلقائياً جزءاً من معرفة المساعد — بدون أي كود.
+✔ الذكاء الاصطناعي (Groq/OpenAI) أصبح اختيارياً: يُستخدم فقط
+  لأسئلة الحوار العامة التي لا يجيب عنها المحرك المحلي، مع تسجيل
+  كامل لأسباب الأخطاء في سجلات Vercel + إعادة محاولة تلقائية.
+✔ حقول تشخيصية في استجابة /api/chat (source, intent, reason)
+  لتشخيص أي مشكلة من DevTools مباشرة.
+✔ Moteur de connaissance LOCAL : l'assistant répond directement
+  depuis les données en direct du site (places, dates, tarif, lieu,
+  programme, intervenants, annonces, FAQ) — instantané, gratuit,
+  fonctionne sans aucune clé Groq/OpenAI. Les FAQ de l'admin
+  enrichissent automatiquement le bot ; l'IA devient optionnelle
+  (logs d'erreurs complets + retry automatique + champs de
+  diagnostic source/intent/reason).
+
 
 【 المتطلبات / Prérequis 】
 - Node.js 20.9 أو أحدث / Node.js 20.9 ou plus récent (npm)
@@ -109,6 +130,17 @@ index uniques.
 ou dans les variables Vercel/Railway)
 
 【 سجل التصحيحات / Journal des corrections 】
+- v7: دعم تطبيق أندرويد الرسمي — 3 نقاط API جديدة: /api/mobile/whoami
+  (هوية الجلسة)، /api/mobile/register (تسجيل الجهاز + رمز سري)،
+  /api/mobile/poll (سحب الإشعارات والإعلانات في الخلفية). المجموعة
+  الجديدة mobile_devices مع فهرس فريد + إشعار تلقائي للمستخدم عند
+  تأكيد دفعه أو إلغاء تسجيله (يظهر في الجرس وفي التطبيق).
+- v7: جسر اتصال آمن window.AndroidBridge في صفحات الدخول/التسجيل
+  والخروج — لا يؤثر إطلاقًا على المستخدم العادي في المتصفح.
+- v7: support de l'application Android officielle — 3 endpoints API:
+  /api/mobile/whoami, /api/mobile/register, /api/mobile/poll +
+  collection mobile_devices (index unique) + notification automatique
+  de confirmation de paiement / annulation + pont natif AndroidBridge.
 - v6: جاهزية النشر السحابي — package-lock.json حتمي + engines Node 20.9
   + إزالة prisma غير المستخدم (تثبيت أسرع وأخف) + start يحترم PORT
   (Railway/Docker) + vercel.json (منطقة cdg1) + railway.json (فحص صحة

@@ -202,6 +202,23 @@ export interface VapidDoc {
   privateKey: string;
 }
 
+/* Mobile devices registered by the Android app for background notifications.
+ * phone is either the account phone or "guest:<id>" for anonymous devices
+ * (guests receive broadcast notifications only). deviceToken is the device's
+ * secret used to authenticate /api/mobile/poll. */
+export interface MobileDeviceDoc {
+  _id?: unknown;
+  phone: string;
+  userId: string | null;
+  fullName?: string;
+  deviceToken: string;
+  platform: string; // "android"
+  appVersion?: string;
+  fcmToken?: string | null;
+  createdAt: Date;
+  lastActiveAt: Date;
+}
+
 export async function collections() {
   const db = await getDb();
   return {
@@ -216,6 +233,7 @@ export async function collections() {
     suggestions: db.collection<SuggestionDoc>("suggestions"),
     faqs: db.collection<FaqDoc>("faqs"),
     registrations: db.collection<CampRegistrationDoc>("camp_registrations"),
+    mobileDevices: db.collection<MobileDeviceDoc>("mobile_devices"),
     vapid: db.collection<VapidDoc>("vapid_keys"),
     seedMeta: db.collection<{ _id: string; version: number; seededAt: Date }>("seed_meta"),
   };

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { notifyNativeDevice } from "@/lib/native-bridge";
 
 export interface SessionUser {
   id: string;
@@ -44,6 +45,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
+    notifyNativeDevice({ type: "guest" });
     window.location.href = "/";
   }, []);
 

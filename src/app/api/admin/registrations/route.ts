@@ -114,6 +114,23 @@ export async function POST(req: NextRequest) {
           },
         }
       );
+
+      // Notify the user (bell + Android background notifications)
+      if (reg.status === "pending") {
+        await c.notifications
+          .insertOne({
+            userId: reg.userId,
+            titleAr: "تم تأكيد دفعتك ✅",
+            titleFr: "Paiement confirmé ✅",
+            bodyAr: `مرحباً ${reg.userFullName}، تم تأكيد تسجيلك ودفعتك لمخيم Happy inside expérience${amount > 0 ? ` — المبلغ: ${amount} دج` : ""}. نراك في المخيم!`,
+            bodyFr: `Bonjour ${reg.userFullName}, votre inscription et votre paiement pour le camp Happy inside expérience sont confirmés${amount > 0 ? ` — montant : ${amount} DA` : ""}. À très bientôt !`,
+            link: "/dashboard",
+            readBy: [],
+            createdAt: new Date(),
+          })
+          .catch(() => {});
+      }
+
       return NextResponse.json({ ok: true, amountPaid: amount });
     }
 
@@ -140,9 +157,27 @@ export async function DELETE(req: NextRequest) {
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "missing_id" }, { status: 400 });
   const c = await collections();
+  const reg = await c.registrations.findOne({ _id: new ObjectId(id) });
   await c.registrations.updateOne(
     { _id: new ObjectId(id) },
     { $set: { status: "cancelled", cancelledAt: new Date() } }
   );
+
+  // Notify the user (bell + Android background notifications)
+  if (reg && reg.status !== "cancelled") {
+    await c.notifications
+      .insertOne({
+        userId: reg.userId,
+        titleAr: "تم إلغاء تسجيلك ❌",
+        titleFr: "Inscription annulée ❌",
+        bodyAr: `مرحباً ${reg.userFullName}، تم إلغاء تسجيلك في مخيم Happy inside expérience. للاستفسار يرجى التواصل معنا.`,
+        bodyFr: `Bonjour ${reg.userFullName}, votre inscription au camp Happy inside expérience a été annulée. Contactez-nous pour toute question.`,
+        link: "/dashboard",
+        readBy: [],
+        createdAt: new Date(),
+      })
+      .catch(() => {});
+  }
+
   return NextResponse.json({ ok: true });
 }

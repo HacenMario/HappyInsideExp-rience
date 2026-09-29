@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/i18n/context";
 import { useSession } from "@/lib/session-context";
+import { notifyNativeDevice } from "@/lib/native-bridge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,6 +106,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (res.ok) {
         await refresh();
+        notifyNativeDevice({ type: "user", phone: form.phone.replace(/[\s-]/g, "") });
         router.push(data.role === "admin" ? "/admin" : "/dashboard");
         router.refresh();
       } else {

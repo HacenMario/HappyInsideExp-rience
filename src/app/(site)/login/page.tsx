@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { LogoMark } from "@/components/shared/logo";
+import { notifyNativeDevice } from "@/lib/native-bridge";
 import { Eye, EyeOff, Lock, LogIn, Phone, CircleAlert } from "lucide-react";
 
 export default function LoginPage() {
@@ -35,6 +36,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (res.ok) {
         await refresh();
+        notifyNativeDevice({ type: "user", phone: phone.replace(/[\s-]/g, "") });
         router.push(data.role === "admin" ? "/admin" : "/dashboard");
         router.refresh();
       } else {
