@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/i18n/context";
 import { useSession } from "@/lib/session-context";
+import { useCampInfo } from "@/components/shared/camp-info";
 import { notifyNativeDevice } from "@/lib/native-bridge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { LogoMark } from "@/components/shared/logo";
+import { WilayaSelect } from "@/components/shared/wilaya-select";
 import { cn } from "@/lib/utils";
 import {
   UserRound,
@@ -33,6 +35,9 @@ import {
   Eye,
   EyeOff,
   CircleAlert,
+  GraduationCap,
+  Briefcase,
+  Banknote,
 } from "lucide-react";
 
 const QUESTIONS = ["q1", "q2", "q3", "q4"] as const;
@@ -40,6 +45,7 @@ const QUESTIONS = ["q1", "q2", "q3", "q4"] as const;
 export default function RegisterPage() {
   const { t, lang, dir } = useLang();
   const { refresh } = useSession();
+  const camp = useCampInfo();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -48,11 +54,19 @@ export default function RegisterPage() {
   const Back = dir === "rtl" ? ChevronRight : ChevronLeft;
   const Next = dir === "rtl" ? ChevronLeft : ChevronRight;
 
+  /* "booking" redirect: after account creation, jump straight to the camp
+     registration card (the "احجز مقعدك الآن" entry point). Read from the URL
+     at event time — no state, no hydration mismatch. */
+  const isBookingRedirect = () =>
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("redirect") === "booking";
+
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
     password: "",
     gender: "",
+    accountType: "",
     wilaya: "",
     workplace: "",
     recoveryQuestion: "",
@@ -85,6 +99,8 @@ export default function RegisterPage() {
   const validateStep2 = () => {
     setError("");
     if (!form.gender) return false;
+    if (!form.accountType) return false;
+    if (!form.wilaya) return false;
     if (!form.recoveryQuestion || !form.recoveryAnswer.trim()) return false;
     return true;
   };
@@ -107,7 +123,11 @@ export default function RegisterPage() {
       if (res.ok) {
         await refresh();
         notifyNativeDevice({ type: "user", phone: form.phone.replace(/[\s-]/g, "") });
-        router.push(data.role === "admin" ? "/admin" : "/dashboard");
+        if (isBookingRedirect() && data.role !== "admin") {
+          router.push("/dashboard?tab=registration&book=1");
+        } else {
+          router.push(data.role === "admin" ? "/admin" : "/dashboard");
+        }
         router.refresh();
       } else {
         const key = errKey(data.error || "");
@@ -248,12 +268,61 @@ export default function RegisterPage() {
                   </RadioGroup>
                 </div>
 
+                <div className="space-y-1.5">
+                  <Label>{t.auth.accountTypeTitle}</Label>
+                  <RadioGroup
+                    value={form.accountType}
+                    onValueChange={(v) => set("accountType", v)}
+                    className="grid grid-cols-2 gap-3"
+                  >
+                    <div>
+                      <RadioGroupItem value="student" id="at-s" className="peer sr-only" />
+                      <Label
+                        htmlFor="at-s"
+                        className="flex cursor-pointer flex-col items-center gap-1 rounded-xl border-2 border-border p-3 text-center font-bold transition-all peer-data-[state=checked]:border-brand peer-data-[state=checked]:bg-brand/10"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <GraduationCap className="h-4 w-4 text-brand-2" /> {t.common.student}
+                        </span>
+                        {camp.studentFee > 0 ? (
+                          <span className="flex items-center gap-1 text-[11px] font-extrabold tabular-nums text-brand-2">
+                            <Banknote className="h-3 w-3" />
+                            {new Intl.NumberFormat("fr-FR").format(camp.studentFee)} DA
+                          </span>
+                        ) : null}
+                      </Label>
+                    </div>
+                    <div>
+                      <RadioGroupItem value="specialist" id="at-p" className="peer sr-only" />
+                      <Label
+                        htmlFor="at-p"
+                        className="flex cursor-pointer flex-col items-center gap-1 rounded-xl border-2 border-border p-3 text-center font-bold transition-all peer-data-[state=checked]:border-brand peer-data-[state=checked]:bg-brand/10"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Briefcase className="h-4 w-4 text-brand" /> {t.common.specialist}
+                        </span>
+                        {camp.specialistFee > 0 ? (
+                          <span className="flex items-center gap-1 text-[11px] font-extrabold tabular-nums text-brand">
+                            <Banknote className="h-3 w-3" />
+                            {new Intl.NumberFormat("fr-FR").format(camp.specialistFee)} DA
+                          </span>
+                        ) : null}
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  <p className="text-[11px] text-muted-foreground">{t.auth.accountTypeHint}</p>
+                </div>
+
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label className="flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5 text-brand" /> {t.common.wilaya}
                     </Label>
-                    <Input value={form.wilaya} onChange={(e) => set("wilaya", e.target.value)} className="h-11" />
+                    <WilayaSelect
+                      value={form.wilaya}
+                      onValueChange={(v) => set("wilaya", v)}
+                      placeholder={t.common.wilayaPlaceholder}
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="flex items-center gap-1.5">
@@ -326,7 +395,17 @@ export default function RegisterPage() {
 
         <p className="mt-5 text-center text-sm text-muted-foreground">
           {t.auth.haveAccount}{" "}
-          <Link href="/login" className="font-extrabold text-brand hover:underline">
+          <Link
+            href="/login"
+            onClick={(e) => {
+              if (isBookingRedirect()) {
+                // keep the booking flow alive through login
+                e.preventDefault();
+                router.push("/login?redirect=booking");
+              }
+            }}
+            className="font-extrabold text-brand hover:underline"
+          >
             {t.auth.loginBtn}
           </Link>
         </p>

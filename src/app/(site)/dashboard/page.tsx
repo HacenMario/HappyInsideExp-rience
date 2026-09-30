@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { SeatProgress } from "@/components/shared/seat-progress";
 import { LogoSkeleton } from "@/components/shared/logo";
 import { useCampInfo } from "@/components/shared/camp-info";
+import { WilayaSelect } from "@/components/shared/wilaya-select";
 import { fileToDataUrl } from "@/lib/image-client";
 import {
   UserRound,
@@ -41,9 +42,15 @@ import {
 interface RegInfo {
   id: string;
   status: "pending" | "confirmed";
+  accountType?: "student" | "specialist";
+  amountDue?: number | null;
   amountPaid: number | null;
   createdAt: string;
 }
+
+type DashTab = "registration" | "profile" | "notifications";
+
+const fmtDA = (n: number) => new Intl.NumberFormat("fr-FR").format(n);
 
 export default function DashboardPage() {
   const { t, lang } = useLang();
@@ -59,6 +66,9 @@ export default function DashboardPage() {
 
   const [profile, setProfile] = useState({ fullName: "", wilaya: "", workplace: "", bio: "", avatar: null as string | null });
   const [savingProfile, setSavingProfile] = useState(false);
+  const [tab, setTab] = useState<DashTab>("registration");
+  const [highlightCard, setHighlightCard] = useState(false);
+  const bookHandled = React.useRef(false);
 
   const loadReg = useCallback(async () => {
     try {
@@ -91,6 +101,37 @@ export default function DashboardPage() {
       });
     }
   }, [user, sessionLoading, router, loadReg]);
+
+  /* Deep link support: /dashboard?tab=profile and /dashboard?tab=registration&book=1
+     (the "احجز مقعدك الآن" flow lands on the camp registration card). */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tParam = params.get("tab");
+    if (tParam === "profile" || tParam === "notifications" || tParam === "registration") {
+      setTab(tParam);
+    }
+    if (params.get("book") === "1") bookHandled.current = false; // fresh booking navigation
+  }, []);
+
+  useEffect(() => {
+    if (bookHandled.current) return;
+    if (sessionLoading || !user || regLoading) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("book") !== "1") return;
+    bookHandled.current = true;
+    setTab("registration");
+    // wait for the card to paint, then scroll to it and pulse-highlight it
+    requestAnimationFrame(() => {
+      const el = document.getElementById("camp-registration-card");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightCard(true);
+        window.setTimeout(() => setHighlightCard(false), 2600);
+      }
+    });
+    // clean the query so refreshes don't re-scroll
+    window.history.replaceState({}, "", "/dashboard");
+  }, [sessionLoading, user, regLoading]);
 
   if (sessionLoading || !user) {
     return <LogoSkeleton label={t.common.loading} />;
@@ -185,7 +226,7 @@ export default function DashboardPage() {
           ) : null}
         </div>
 
-        <Tabs defaultValue="registration" dir={lang === "ar" ? "rtl" : "ltr"} className="w-full">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as DashTab)} dir={lang === "ar" ? "rtl" : "ltr"} className="w-full">
           <TabsList className="grid w-full grid-cols-3 rounded-2xl p-1.5">
             <TabsTrigger value="registration" className="gap-1.5 rounded-xl font-bold data-[state=active]:shadow-md">
               <CalendarCheck className="h-4 w-4" />
@@ -206,7 +247,13 @@ export default function DashboardPage() {
 
           {/* ===== Registration tab ===== */}
           <TabsContent value="registration" className="mt-5">
-            <Card className="card-glow border-0 p-0">
+            <Card
+              id="camp-registration-card"
+              className={
+                "card-glow border-0 p-0 transition-all duration-500 " +
+                (highlightCard ? "ring-4 ring-brand/60 shadow-2xl shadow-brand/25" : "")
+              }
+            >
               <CardContent className="p-6 sm:p-8">
                 {regLoading ? (
                   <div className="space-y-3">
@@ -234,18 +281,26 @@ export default function DashboardPage() {
                           })}
                         </Badge>
                       </div>
-                      {camp.fee > 0 ? (
-                        <div className="mx-auto mt-5 flex max-w-sm items-center justify-between rounded-2xl border border-brand/30 bg-brand/5 px-5 py-4">
-                          <span className="flex items-center gap-2 text-sm font-bold">
-                            <Banknote className="h-5 w-5 text-brand" />
-                            {t.campReg.feeDue}
-                          </span>
-                          <span className="text-xl font-black tabular-nums text-brand">
-                            {new Intl.NumberFormat("fr-FR").format(camp.fee)}
-                            <span className="ms-1 text-xs">DA</span>
-                          </span>
-                        </div>
-                      ) : null}
+                      {(() => {
+                        const due =
+                          reg.amountDue != null
+                            ? reg.amountDue
+                            : user.accountType === "student"
+                              ? camp.studentFee
+                              : camp.specialistFee;
+                        return due > 0 ? (
+                          <div className="mx-auto mt-5 flex max-w-sm items-center justify-between rounded-2xl border border-brand/30 bg-brand/5 px-5 py-4">
+                            <span className="flex items-center gap-2 text-sm font-bold">
+                              <Banknote className="h-5 w-5 text-brand" />
+                              {t.campReg.feeDue}
+                            </span>
+                            <span className="text-xl font-black tabular-nums text-brand">
+                              {fmtDA(due)}
+                              <span className="ms-1 text-xs">DA</span>
+                            </span>
+                          </div>
+                        ) : null;
+                      })()}
                       <div className="mx-auto mt-4 max-w-md space-y-2 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4 text-sm font-semibold text-amber-700 dark:text-amber-300">
                         <p>{t.campReg.pendingDesc}</p>
                         <p className="text-xs opacity-80">{t.campReg.contactAdminFee}</p>
@@ -314,6 +369,28 @@ export default function DashboardPage() {
                       ) : null}
                     </div>
                     {seats ? <SeatProgress registered={seats.registered} total={seats.totalSeats} className="mb-6" /> : null}
+                    {camp.loaded && (camp.studentFee > 0 || camp.specialistFee > 0) ? (
+                      <div className="mx-auto mb-5 flex max-w-md flex-wrap items-center justify-center gap-x-5 gap-y-1.5 rounded-2xl border border-brand/25 bg-brand/5 px-4 py-3 text-xs font-bold">
+                        <span
+                          className={
+                            user.accountType === "student"
+                              ? "flex items-center gap-1 text-brand-2 underline decoration-brand-2/50 decoration-2 underline-offset-4"
+                              : "flex items-center gap-1 text-muted-foreground"
+                          }
+                        >
+                          🎓 {t.campReg.studentPrice}: {fmtDA(camp.studentFee)} DA
+                        </span>
+                        <span
+                          className={
+                            user.accountType === "specialist"
+                              ? "flex items-center gap-1 text-brand underline decoration-brand/50 decoration-2 underline-offset-4"
+                              : "flex items-center gap-1 text-muted-foreground"
+                          }
+                        >
+                          💼 {t.campReg.specialistPrice}: {fmtDA(camp.specialistFee)} DA
+                        </span>
+                      </div>
+                    ) : null}
                     <Button
                       onClick={reserve}
                       disabled={busy || !seats?.registrationOpen}
@@ -372,7 +449,11 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t.common.wilaya}</Label>
-                    <Input value={profile.wilaya} onChange={(e) => setProfile({ ...profile, wilaya: e.target.value })} className="h-11" />
+                    <WilayaSelect
+                      value={profile.wilaya}
+                      onValueChange={(v) => setProfile({ ...profile, wilaya: v })}
+                      placeholder={t.common.wilayaPlaceholder}
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t.common.workplace}</Label>
@@ -384,9 +465,24 @@ export default function DashboardPage() {
                   <Textarea value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={3} />
                 </div>
                 <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-                  <Badge variant="outline" className="text-xs font-bold">
-                    {t.common.gender}: {user.gender === "female" ? "👩 " + t.common.female : "👨 " + t.common.male}
-                  </Badge>
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <Badge variant="outline" className="text-xs font-bold">
+                      {t.common.gender}: {user.gender === "female" ? "👩 " + t.common.female : "👨 " + t.common.male}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={
+                        "text-xs font-bold " +
+                        (user.accountType === "student"
+                          ? "border-brand-2/40 text-brand-2"
+                          : "border-brand/40 text-brand")
+                      }
+                    >
+                      {user.accountType === "student"
+                        ? "🎓 " + (user.gender === "female" ? t.common.studentF : t.common.student)
+                        : "💼 " + (user.gender === "female" ? t.common.specialistF : t.common.specialist)}
+                    </Badge>
+                  </div>
                   <Button onClick={saveProfile} disabled={savingProfile} className="w-full rounded-xl font-extrabold shadow-lg shadow-brand/25 sm:w-auto sm:px-8">
                     {savingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     {t.dash.saveProfile}

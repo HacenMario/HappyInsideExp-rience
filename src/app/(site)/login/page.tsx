@@ -23,6 +23,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  /* "booking" redirect: land directly on the camp registration card after
+     login. Read from the URL at event time — no state, no hydration risk. */
+  const isBookingRedirect = () =>
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("redirect") === "booking";
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -37,7 +43,11 @@ export default function LoginPage() {
       if (res.ok) {
         await refresh();
         notifyNativeDevice({ type: "user", phone: phone.replace(/[\s-]/g, "") });
-        router.push(data.role === "admin" ? "/admin" : "/dashboard");
+        if (isBookingRedirect() && data.role !== "admin") {
+          router.push("/dashboard?tab=registration&book=1");
+        } else {
+          router.push(data.role === "admin" ? "/admin" : "/dashboard");
+        }
         router.refresh();
       } else {
         const key =
@@ -122,7 +132,17 @@ export default function LoginPage() {
               <Link href="/forgot-password" className="text-xs font-bold text-brand-2 hover:underline">
                 {t.auth.forgotLink}
               </Link>
-              <Link href="/register" className="text-xs font-bold text-brand hover:underline">
+              <Link
+                href="/register"
+                onClick={(e) => {
+                  if (isBookingRedirect()) {
+                    // keep the booking flow alive through registration
+                    e.preventDefault();
+                    router.push("/register?redirect=booking");
+                  }
+                }}
+                className="text-xs font-bold text-brand hover:underline"
+              >
                 {t.auth.createOne}
               </Link>
             </div>

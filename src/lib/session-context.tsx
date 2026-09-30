@@ -8,6 +8,7 @@ export interface SessionUser {
   fullName: string;
   phone: string;
   gender: "male" | "female";
+  accountType: "student" | "specialist";
   wilaya: string;
   workplace: string;
   bio: string;

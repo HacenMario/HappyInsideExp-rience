@@ -5,7 +5,7 @@ import { collections, type CampSettingsDoc } from "./mongodb";
 const DEFAULT_SETTINGS: CampSettingsDoc = {
   key: "main",
   edition: 1,
-  nameEn: "Happy inside expérience",
+  nameEn: "Happy inside experience",
   sloganAr: "نتعلّم، نستمتع، نتبادل، ونعود بطاقة أكبر",
   sloganFr: "Apprendre, s'amuser, échanger et revenir plus fort",
   descAr:
@@ -26,8 +26,8 @@ const DEFAULT_SETTINGS: CampSettingsDoc = {
   instagramUrl: process.env.INSTAGRAM_URL || "https://instagram.com/happyinside.experience",
   announcementBarActive: true,
   announcementBarFloating: false,
-  announcementBarTextAr: "✨ التسجيل مفتوح الآن للطبعة الأولى من مخيم Happy inside expérience — المقاعد محدودة، سارع بالحجز!",
-  announcementBarTextFr: "✨ Les inscriptions sont ouvertes pour la 1ère édition du camp Happy inside expérience — places limitées, dépêchez-vous !",
+  announcementBarTextAr: "✨ التسجيل مفتوح الآن للطبعة الأولى من مخيم Happy inside experience — المقاعد محدودة، سارع بالحجز!",
+  announcementBarTextFr: "✨ Les inscriptions sont ouvertes pour la 1ère édition du camp Happy inside experience — places limitées, dépêchez-vous !",
   announcementBarLink: "/register",
 };
 
@@ -86,7 +86,7 @@ let seeded = false;
 
 /* Bump this version to re-run the cleanup (dedupe + indexes + settings
    migration) on existing DBs */
-const SEED_VERSION = 4;
+const SEED_VERSION = 5;
 
 /* Remove duplicate documents introduced by concurrent seeding in older
    versions: keeps the OLDEST document per key value. */
@@ -184,14 +184,18 @@ export async function ensureSeed() {
       await c.settings.insertOne(DEFAULT_SETTINGS);
     } else if (
       settings.fee === undefined ||
+      settings.studentFee === undefined ||
       settings.logo === undefined ||
       settings.heroImage === undefined ||
       settings.programImage1 === undefined ||
       settings.programImage2 === undefined
     ) {
-      // Migration for DBs created before fee/logo/images existed
+      // Migration for DBs created before fee/studentFee/logo/images existed
       const patch: Record<string, unknown> = {};
       if (settings.fee === undefined) patch.fee = 0;
+      // studentFee defaults to the existing fee so behaviour never changes
+      // silently — the admin adjusts both prices from the settings panel.
+      if (settings.studentFee === undefined) patch.studentFee = settings.fee ?? 0;
       if (settings.logo === undefined) patch.logo = null;
       if (settings.heroImage === undefined) patch.heroImage = null;
       if (settings.programImage1 === undefined) patch.programImage1 = null;
@@ -215,9 +219,9 @@ export async function ensureSeed() {
         titleAr: "أخصائية نفسية — مقدّمة نشاط",
         titleFr: "Psychologue — Animatrice d'activité",
         bioAr: "أخصائية نفسية ذات خبرة في المرافقة النفسية، شغوفة بتبادل الخبرات بين الممارسين وتطوير أساليب حديثة في الممارسة المهنية.",
-        bioFr: "Psychologue expérimentée en accompagnement psychologique, passionnée par le partage d'expériences entre praticiens et le développement de techniques modernes.",
+        bioFr: "Psychologue expérimentée en accompagnement psychologique, passionnée par le partage d'experiences entre praticiens et le développement de techniques modernes.",
         activityAr: "جلسات نقاش حول واقع الممارسة المهنية وتبادل الخبرات",
-        activityFr: "Discussions sur la réalité de la pratique professionnelle et échange d'expériences",
+        activityFr: "Discussions sur la réalité de la pratique professionnelle et échange d'experiences",
         photo: null,
         order: 1,
         active: true,
@@ -255,10 +259,10 @@ export async function ensureSeed() {
     const annCount = await c.announcements.countDocuments();
     if (annCount === 0) {
       await c.announcements.insertOne({
-        titleAr: "انطلاق الطبعة الأولى من مخيم Happy inside expérience ✨",
-        titleFr: "Lancement de la 1ère édition du camp Happy inside expérience ✨",
-        bodyAr: "يسرّنا أن نعلن عن انطلاق التسجيل في الطبعة الأولى من مخيم Happy inside expérience المخصص لأخصائيي وعاملات القطاع النفسي في مختلف ولايات الجزائر. أربعة أيام وخمس ليالي من التطوير المهني والعناية بالنفس في أجواء تفاعلية ممتعة. المقاعد محدودة، سارعوا بالتسجيل!",
-        bodyFr: "Nous sommes ravis d'annoncer l'ouverture des inscriptions pour la première édition du camp Happy inside expérience dédié aux psychologues et praticiens du secteur psychologique de toutes les wilayas d'Algérie. Quatre jours et cinq nuits de développement professionnel et de soin de soi dans une ambiance interactive et ludique. Places limitées, inscrivez-vous vite !",
+        titleAr: "انطلاق الطبعة الأولى من مخيم Happy inside experience ✨",
+        titleFr: "Lancement de la 1ère édition du camp Happy inside experience ✨",
+        bodyAr: "يسرّنا أن نعلن عن انطلاق التسجيل في الطبعة الأولى من مخيم Happy inside experience المخصص لأخصائيي وعاملات القطاع النفسي في مختلف ولايات الجزائر. أربعة أيام وخمس ليالي من التطوير المهني والعناية بالنفس في أجواء تفاعلية ممتعة. المقاعد محدودة، سارعوا بالتسجيل!",
+        bodyFr: "Nous sommes ravis d'annoncer l'ouverture des inscriptions pour la première édition du camp Happy inside experience dédié aux psychologues et praticiens du secteur psychologique de toutes les wilayas d'Algérie. Quatre jours et cinq nuits de développement professionnel et de soin de soi dans une ambiance interactive et ludique. Places limitées, inscrivez-vous vite !",
         pinned: true,
         active: true,
         notify: false,

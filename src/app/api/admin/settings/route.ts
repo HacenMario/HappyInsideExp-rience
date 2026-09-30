@@ -38,9 +38,13 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    // Participation fee (DZD, >= 0)
+    // Participation fees (DZD, >= 0): `fee` = specialist price,
+    // `studentFee` = student price (set in advance by the admin).
     if (body.fee !== undefined) {
       update.fee = Math.max(0, Math.round(Number(body.fee) || 0));
+    }
+    if (body.studentFee !== undefined) {
+      update.studentFee = Math.max(0, Math.round(Number(body.studentFee) || 0));
     }
 
     // Camp logo (base64 data URL or null to reset) — max ~2MB encoded

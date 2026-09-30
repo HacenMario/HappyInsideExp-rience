@@ -49,6 +49,7 @@ export interface UserDoc {
   phone: string;
   password: string; // bcrypt hash
   gender: "male" | "female";
+  accountType?: "student" | "specialist"; // pricing category (legacy users = specialist)
   wilaya?: string;
   workplace?: string;
   bio?: string;
@@ -75,7 +76,8 @@ export interface CampSettingsDoc {
   endDate: string;
   totalSeats: number;
   registrationOpen: boolean;
-  fee: number; // participation fee (DZD) — 0 = free/unset
+  fee: number; // SPECIALIST participation fee (DZD) — 0 = free/unset
+  studentFee?: number; // STUDENT participation fee (DZD) — undefined = same as fee
   logo?: string | null; // base64 data URL — camp logo (header/footer/splash)
   heroImage?: string | null; // data URL — landing hero visual (null = /images/hero.png)
   programImage1?: string | null; // data URL — camp poster (null = /images/program-poster.jpg)
@@ -185,6 +187,8 @@ export interface CampRegistrationDoc {
   userId: string;
   userFullName: string;
   userPhone: string;
+  accountType?: "student" | "specialist"; // pricing category snapshot at booking time
+  amountDue?: number; // price the registrant must pay (DZD) — snapshot of the admin pricing
   motivationAr?: string;
   status: "pending" | "confirmed" | "cancelled";
   amountPaid?: number; // set when admin validates the payment

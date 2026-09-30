@@ -11,7 +11,7 @@ export function LogoMark({ size = 40, className }: { size?: number; className?: 
     return (
       <img
         src={camp.logo}
-        alt="Happy inside expérience"
+        alt="Happy inside experience"
         width={size}
         height={size}
         className={cn("rounded-xl object-cover", className)}
@@ -21,7 +21,7 @@ export function LogoMark({ size = 40, className }: { size?: number; className?: 
   return (
     <Image
       src="/images/logo.png"
-      alt="Happy inside expérience"
+      alt="Happy inside experience"
       width={size}
       height={size}
       className={cn("rounded-xl object-cover", className)}

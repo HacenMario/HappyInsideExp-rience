@@ -41,7 +41,7 @@ export default function AboutPage() {
           <div className="absolute -inset-3 -z-10 rounded-[2rem] bg-gradient-to-br from-brand/25 to-brand-2/25 blur-xl" />
           <Image
             src="/images/hero.png"
-            alt="Happy inside expérience"
+            alt="Happy inside experience"
             width={1344}
             height={768}
             className="w-full rounded-[2rem] border-2 border-white/60 object-cover shadow-2xl dark:border-white/10"

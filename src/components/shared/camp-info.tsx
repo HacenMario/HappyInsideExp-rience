@@ -14,7 +14,9 @@ interface CampInfo {
   email: string;
   facebook: string;
   instagram: string;
-  fee: number;
+  fee: number; // specialist price (legacy field, kept for compatibility)
+  studentFee: number; // student price
+  specialistFee: number; // specialist price (alias of fee)
   loaded: boolean;
 }
 
@@ -27,6 +29,8 @@ const EMPTY: CampInfo = {
   facebook: "",
   instagram: "",
   fee: 0,
+  studentFee: 0,
+  specialistFee: 0,
   loaded: false,
 };
 
@@ -41,6 +45,7 @@ export function CampInfoProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       const s = data?.settings;
       if (!s) return;
+      const fee = typeof s.fee === "number" ? s.fee : 0;
       setInfo({
         logo: typeof s.logo === "string" && s.logo ? s.logo : null,
         sloganAr: s.sloganAr || "",
@@ -49,7 +54,12 @@ export function CampInfoProvider({ children }: { children: React.ReactNode }) {
         email: String(s.email || ""),
         facebook: String(s.facebookUrl || ""),
         instagram: String(s.instagramUrl || ""),
-        fee: typeof s.fee === "number" ? s.fee : 0,
+        fee,
+        studentFee:
+          typeof s.studentFee === "number"
+            ? s.studentFee
+            : fee, // legacy DBs without studentFee → same as the main fee
+        specialistFee: fee,
         loaded: true,
       });
     } catch {}

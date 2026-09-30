@@ -32,6 +32,8 @@ interface Reg {
   fullName: string;
   phone: string;
   gender: string;
+  accountType: "student" | "specialist";
+  amountDue: number | null;
   wilaya: string;
   status: "pending" | "confirmed" | "cancelled";
   amountPaid: number | null;
@@ -42,6 +44,7 @@ interface Reg {
 
 interface MoneySummary {
   fee: number;
+  studentFee: number;
   pendingCount: number;
   confirmedCount: number;
   cancelledCount: number;
@@ -75,15 +78,20 @@ export default function RegistrationsTab() {
       if (!data.error) {
         setRegs(data.registrations);
         setSummary(data.summary);
-        // Prefill amount inputs with the fee (or the already-paid amount)
+        // Prefill amount inputs with the expected amount for that
+        // registration (student/specialist pricing) or the paid amount
         setAmounts((prev) => {
           const next = { ...prev };
           for (const r of data.registrations as Reg[]) {
             if (next[r.id] === undefined) {
+              const typePrice =
+                r.accountType === "student"
+                  ? data.summary?.studentFee ?? data.summary?.fee ?? 0
+                  : data.summary?.fee ?? 0;
               next[r.id] = String(
                 r.status === "confirmed" && r.amountPaid != null
                   ? r.amountPaid
-                  : data.summary?.fee ?? 0
+                  : r.amountDue ?? typePrice
               );
             }
           }
@@ -188,8 +196,8 @@ export default function RegistrationsTab() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <Wallet className="h-5 w-5 text-brand" />
-              <Badge variant="outline" className="text-[10px]">
-                {summary?.confirmedCount ?? 0} × {fmtMoney(summary?.fee ?? 0)}
+              <Badge variant="outline" className="gap-1 text-[10px]">
+                🎓 {fmtMoney(summary?.studentFee ?? 0)} · 💼 {fmtMoney(summary?.fee ?? 0)}
               </Badge>
             </div>
             <p className="mt-2 text-xl font-black tabular-nums text-brand sm:text-2xl">
@@ -271,6 +279,7 @@ export default function RegistrationsTab() {
                   <TableRow>
                     <TableHead className="min-w-36">{t.common.fullName}</TableHead>
                     <TableHead>{t.common.phone}</TableHead>
+                    <TableHead className="hidden md:table-cell">{R.category}</TableHead>
                     <TableHead className="hidden md:table-cell">{t.common.wilaya}</TableHead>
                     <TableHead className="hidden lg:table-cell">{t.common.date}</TableHead>
                     <TableHead>{t.common.status}</TableHead>
@@ -288,6 +297,33 @@ export default function RegistrationsTab() {
                         <a href={`tel:${r.phone}`} className="font-semibold text-brand hover:underline">
                           {r.phone}
                         </a>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex flex-col gap-0.5">
+                          <Badge
+                            variant="outline"
+                            className={
+                              "w-fit gap-1 text-[10px] font-extrabold " +
+                              (r.accountType === "student"
+                                ? "border-brand-2/40 text-brand-2"
+                                : "border-brand/40 text-brand")
+                            }
+                          >
+                            {r.accountType === "student" ? "🎓" : "💼"}
+                            {r.accountType === "student"
+                              ? r.gender === "female"
+                                ? t.common.studentF
+                                : t.common.student
+                              : r.gender === "female"
+                                ? t.common.specialistF
+                                : t.common.specialist}
+                          </Badge>
+                          {r.amountDue != null && r.amountDue > 0 ? (
+                            <span className="text-[10px] font-bold tabular-nums text-muted-foreground">
+                              {R.due}: {fmtMoney(r.amountDue)} DA
+                            </span>
+                          ) : null}
+                        </div>
                       </TableCell>
                       <TableCell className="hidden text-xs md:table-cell">{r.wilaya}</TableCell>
                       <TableCell className="hidden text-xs lg:table-cell">

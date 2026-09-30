@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   try {
     await ensureSeed();
     const body = await req.json();
-    const { fullName, phone, password, gender, wilaya, workplace, bio, recoveryQuestion, recoveryAnswer } = body;
+    const { fullName, phone, password, gender, accountType, wilaya, workplace, bio, recoveryQuestion, recoveryAnswer } = body;
 
     if (!fullName || !phone || !password || !gender || !recoveryQuestion || !recoveryAnswer) {
       return NextResponse.json({ error: "missing_fields" }, { status: 400 });
@@ -25,6 +25,9 @@ export async function POST(req: NextRequest) {
     if (gender !== "male" && gender !== "female") {
       return NextResponse.json({ error: "missing_fields" }, { status: 400 });
     }
+    // Pricing category chosen at signup (student / specialist). Unknown or
+    // missing values fall back to "specialist" so older clients keep working.
+    const cleanAccountType = accountType === "student" ? "student" : "specialist";
 
     const c = await collections();
     const existing = await c.users.findOne({ phone: cleanPhone });
@@ -37,6 +40,7 @@ export async function POST(req: NextRequest) {
       phone: cleanPhone,
       password: await bcrypt.hash(String(password), 10),
       gender,
+      accountType: cleanAccountType,
       wilaya: wilaya ? String(wilaya).trim() : "الجزائر",
       workplace: workplace ? String(workplace).trim() : "",
       bio: bio ? String(bio).trim() : "",

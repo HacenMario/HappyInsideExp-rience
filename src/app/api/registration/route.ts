@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
 import { collections } from "@/lib/mongodb";
 import { getSession } from "@/lib/auth";
 
@@ -61,17 +62,35 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const { motivation } = body || {};
 
+    // Pricing category of the registrant (falls back to specialist for
+    // legacy accounts created before accountType existed).
+    let accountType: "student" | "specialist" = "specialist";
+    try {
+      const user = await c.users.findOne({ _id: new ObjectId(session.uid) });
+      if (user?.accountType === "student") accountType = "student";
+    } catch {
+      // invalid uid shape → keep the default
+    }
+    const amountDue =
+      accountType === "student"
+        ? typeof settings.studentFee === "number"
+          ? settings.studentFee
+          : settings.fee ?? 0
+        : settings.fee ?? 0;
+
     await c.registrations.insertOne({
       userId: session.uid,
       userFullName: session.fullName,
       userPhone: session.phone,
+      accountType,
+      amountDue,
       motivationAr: motivation ? String(motivation).slice(0, 500) : "",
       status: "pending", // stays pending until the admin validates the payment
       createdAt: new Date(),
     });
 
     const remaining = Math.max(0, settings.totalSeats - occupied - 1);
-    return NextResponse.json({ ok: true, seatsLeft: remaining, status: "pending" });
+    return NextResponse.json({ ok: true, seatsLeft: remaining, status: "pending", accountType, amountDue });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "server_error" }, { status: 500 });

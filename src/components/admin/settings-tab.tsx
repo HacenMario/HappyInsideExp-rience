@@ -34,6 +34,7 @@ interface Settings {
   totalSeats: number;
   registrationOpen: boolean;
   fee: number;
+  studentFee: number;
   logo: string | null;
   heroImage?: string | null;
   programImage1?: string | null;
@@ -153,6 +154,7 @@ export default function SettingsTab() {
         if (d.settings)
           setForm((f) => ({
             fee: 0,
+            studentFee: 0,
             logo: null,
             ...d.settings,
             ...(f && f.logo && !d.settings.logo ? { logo: f.logo } : {}),
@@ -400,8 +402,20 @@ export default function SettingsTab() {
                 min={0}
                 step={100}
               />
-              <p className="text-[11px] text-muted-foreground">{t.admin.settings.feeHint}</p>
             </Field>
+            <Field label={t.admin.settings.studentFee}>
+              <Input
+                type="number"
+                value={form.studentFee ?? 0}
+                onChange={(e) => set("studentFee", Math.max(0, parseInt(e.target.value) || 0))}
+                className="h-10"
+                min={0}
+                step={100}
+              />
+            </Field>
+            <div className="sm:col-span-2">
+              <p className="text-[11px] text-muted-foreground">{t.admin.settings.feeHint}</p>
+            </div>
             <div className="flex items-center justify-between rounded-xl border border-border px-4 py-2.5">
               <Label className="cursor-pointer text-xs font-bold">{t.admin.settings.regOpen}</Label>
               <Switch checked={form.registrationOpen} onCheckedChange={(v) => set("registrationOpen", v)} />

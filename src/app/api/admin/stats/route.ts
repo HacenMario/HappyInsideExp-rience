@@ -38,14 +38,33 @@ export async function GET() {
       ])
       .toArray();
     const collected = collectedAgg[0]?.total || 0;
-    const expected = confirmedCount * fee;
+    // Expected/potential amounts use each registration's own pricing
+    // (student vs specialist) via amountDue, falling back to the type price.
+    const studentFee =
+      typeof settings?.studentFee === "number" ? settings.studentFee : fee;
+    const allRegs = await c.registrations
+      .find({ status: { $in: ["pending", "confirmed"] } })
+      .toArray();
+    const typePrice = (r: { accountType?: string; amountDue?: number }) =>
+      typeof r.amountDue === "number"
+        ? r.amountDue
+        : r.accountType === "student"
+          ? studentFee
+          : fee;
+    const expected = allRegs
+      .filter((r) => r.status === "confirmed")
+      .reduce((s, r) => s + typePrice(r), 0);
+    const pendingPotential = allRegs
+      .filter((r) => r.status === "pending")
+      .reduce((s, r) => s + typePrice(r), 0);
     const money = {
       fee,
+      studentFee,
       collected,
       expected,
       remaining: Math.max(0, expected - collected),
       pendingCount,
-      pendingPotential: pendingCount * fee,
+      pendingPotential,
       confirmedCount,
     };
 

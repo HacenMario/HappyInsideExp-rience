@@ -18,11 +18,11 @@ const fontPreloads = [
 ];
 
 export const metadata: Metadata = {
-  title: "Happy inside expérience | مخيم الأخصائيين النفسيين في الجزائر",
+  title: "Happy inside experience | مخيم الأخصائيين النفسيين في الجزائر",
   description:
     "مخيم يجمع بين التطوير المهني والعناية بالنفس لأخصائيي الجزائر في مختلف الولايات — 4 أيام و5 ليالٍ من التعلّم والاستمتاع والتبادل. Camp alliant développement professionnel et soin de soi pour les psychologues de toute l'Algérie.",
   keywords: [
-    "Happy inside expérience",
+    "Happy inside experience",
     "مخيم أخصائيي نفسية",
     "الجزائر",
     "psychologues Algérie",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: "Happy Inside",
   },
   openGraph: {
-    title: "Happy inside expérience",
+    title: "Happy inside experience",
     description: "نتعلّم، نستمتع، نتبادل، ونعود بطاقة أكبر",
     images: ["/images/hero.png"],
     type: "website",

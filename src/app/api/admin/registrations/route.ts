@@ -14,6 +14,8 @@ export async function GET() {
     c.settings.findOne({ key: "main" }),
   ]);
   const fee = typeof settings?.fee === "number" ? settings.fee : 0;
+  const studentFee =
+    typeof settings?.studentFee === "number" ? settings.studentFee : fee;
 
   const userIds = [...new Set(list.map((r) => r.userId))];
   const users = await c.users
@@ -23,12 +25,23 @@ export async function GET() {
 
   const registrations = list.map((r) => {
     const u = userMap.get(r.userId);
+    const accountType =
+      r.accountType === "student" || u?.accountType === "student" ? "student" : "specialist";
+    // Expected amount: stored snapshot, or computed from the current pricing
+    const amountDue =
+      typeof r.amountDue === "number"
+        ? r.amountDue
+        : accountType === "student"
+          ? studentFee
+          : fee;
     return {
       id: r._id!.toString(),
       userId: r.userId,
       fullName: u?.fullName || r.userFullName,
       phone: r.userPhone,
       gender: u?.gender || "male",
+      accountType,
+      amountDue,
       wilaya: u?.wilaya || "",
       workplace: u?.workplace || "",
       avatar: u?.avatar || null,
@@ -41,18 +54,21 @@ export async function GET() {
     };
   });
 
-  /* ---- Money summary (computed live so cards auto-update) ---- */
+  /* ---- Money summary (computed live so cards auto-update) ----
+     Each registration carries its own expected amount (student or
+     specialist pricing), so totals mix both categories correctly. */
   const pending = registrations.filter((r) => r.status === "pending");
   const confirmed = registrations.filter((r) => r.status === "confirmed");
   const cancelled = registrations.filter((r) => r.status === "cancelled");
   const collected = confirmed.reduce((s, r) => s + (r.amountPaid || 0), 0);
-  const expected = confirmed.length * fee;
-  const pendingPotential = pending.length * fee;
+  const expected = confirmed.reduce((s, r) => s + (r.amountDue ?? fee), 0);
+  const pendingPotential = pending.reduce((s, r) => s + (r.amountDue ?? fee), 0);
 
   return NextResponse.json({
     registrations,
     summary: {
       fee,
+      studentFee,
       pendingCount: pending.length,
       confirmedCount: confirmed.length,
       cancelledCount: cancelled.length,

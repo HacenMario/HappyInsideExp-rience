@@ -33,6 +33,7 @@ export interface CampSnapshot {
   sloganAr: string;
   sloganFr: string;
   fee: number;
+  studentFee: number;
   totalSeats: number;
   occupied: number;
   seatsLeft: number;
@@ -96,7 +97,7 @@ export async function loadCampSnapshot(): Promise<CampSnapshot> {
   ]);
 
   return {
-    name: settings?.nameEn || "Happy inside expérience",
+    name: settings?.nameEn || "Happy inside experience",
     edition: settings?.edition ?? 1,
     startDate: settings?.startDate ? new Date(settings.startDate) : null,
     endDate: settings?.endDate ? new Date(settings.endDate) : null,
@@ -107,6 +108,12 @@ export async function loadCampSnapshot(): Promise<CampSnapshot> {
     sloganAr: settings?.sloganAr || "",
     sloganFr: settings?.sloganFr || "",
     fee: typeof settings?.fee === "number" ? settings.fee : 0,
+    studentFee:
+      typeof settings?.studentFee === "number"
+        ? settings.studentFee
+        : typeof settings?.fee === "number"
+          ? settings.fee
+          : 0,
     totalSeats,
     occupied,
     seatsLeft: Math.max(0, totalSeats - occupied),
@@ -355,7 +362,7 @@ const PROGRAM_PILLARS: Record<"ar" | "fr", string[]> = {
   ],
   fr: [
     "🗣️ Discussions sur la réalité de la pratique professionnelle",
-    "🤝 Échange d'expériences entre praticiens",
+    "🤝 Échange d'experiences entre praticiens",
     "🧠 Techniques et approches modernes",
     "🎲 Jeux et activités interactives",
     "📝 Activités libératrices",
@@ -406,15 +413,24 @@ function render(intent: string, s: CampSnapshot, lang: "ar" | "fr"): string {
         ? `📍 مكان المخيم: ${s.locationAr}.\nتفاصيل الوصول واللوجيستيك تُرسل للمسجلين قبل الانطلاق.\n${waLine}`
         : `📍 Lieu du camp : ${s.locationFr}.\nLes détails d'accès et de logistique sont envoyés aux inscrits avant le départ.\n${waLine}`;
 
-    case "fee":
+    case "fee": {
+      const arPrices =
+        s.fee > 0 || s.studentFee > 0
+          ? `💰 سعر الأخصائيين: ${s.fee > 0 ? fmtMoney(s.fee, "ar") : "سيُعلن قريباً"} — سعر الطلبة: ${s.studentFee > 0 ? fmtMoney(s.studentFee, "ar") : "سيُعلن قريباً"}.`
+          : "💰 الأسعار: سيُعلن قريباً.";
+      const frPrices =
+        s.fee > 0 || s.studentFee > 0
+          ? `💰 Tarif spécialistes : ${s.fee > 0 ? fmtMoney(s.fee, "fr") : "bientôt annoncé"} — tarif étudiants : ${s.studentFee > 0 ? fmtMoney(s.studentFee, "fr") : "bientôt annoncé"}.`
+          : "💰 Tarifs : bientôt annoncés.";
       return lang === "ar"
-        ? `💰 سعر التسجيل: ${s.fee > 0 ? fmtMoney(s.fee, "ar") : "سيُعلن قريباً"}.\n${openLine}\n${seatsLine}\n${waLine}`
-        : `💰 Tarif d'inscription : ${s.fee > 0 ? fmtMoney(s.fee, "fr") : "bientôt annoncé"}.\n${openLine}\n${seatsLine}\n${waLine}`;
+        ? `${arPrices}\n${openLine}\n${seatsLine}\n${waLine}`
+        : `${frPrices}\n${openLine}\n${seatsLine}\n${waLine}`;
+    }
 
     case "register":
       return lang === "ar"
-        ? `📝 التسجيل سهل جداً:\n1️⃣ أنشئ حساباً برقم هاتفك وكلمة المرور (صفحة «إنشاء حساب»).\n2️⃣ من صفحة التسجيل في المخيم احجز مقعدك.\n3️⃣ بعد تأكيد الدفع من الإدارة يصلك إشعار.\n${s.fee > 0 ? `💰 الرسوم: ${fmtMoney(s.fee, "ar")}.\n` : ""}${openLine}\n${seatsLine}`
-        : `📝 L'inscription est simple :\n1️⃣ Créez un compte avec votre numéro de téléphone et un mot de passe (page « Inscription »).\n2️⃣ Réservez votre place depuis la page du camp.\n3️⃣ Après confirmation du paiement par l'équipe, vous recevez une notification.\n${s.fee > 0 ? `💰 Tarif : ${fmtMoney(s.fee, "fr")}.\n` : ""}${openLine}\n${seatsLine}`;
+        ? `📝 التسجيل سهل جداً:\n1️⃣ أنشئ حساباً برقم هاتفك وكلمة المرور (صفحة «إنشاء حساب»).\n2️⃣ من صفحة التسجيل في المخيم احجز مقعدك.\n3️⃣ بعد تأكيد الدفع من الإدارة يصلك إشعار.\n${s.fee > 0 || s.studentFee > 0 ? `💰 الرسوم: الأخصائيون ${fmtMoney(s.fee, "ar")} / الطلبة ${fmtMoney(s.studentFee, "ar")}.\n` : ""}${openLine}\n${seatsLine}`
+        : `📝 L'inscription est simple :\n1️⃣ Créez un compte avec votre numéro de téléphone et un mot de passe (page « Inscription »).\n2️⃣ Réservez votre place depuis la page du camp.\n3️⃣ Après confirmation du paiement par l'équipe, vous recevez une notification.\n${s.fee > 0 || s.studentFee > 0 ? `💰 Tarifs : spécialistes ${fmtMoney(s.fee, "fr")} / étudiants ${fmtMoney(s.studentFee, "fr")}.\n` : ""}${openLine}\n${seatsLine}`;
 
     case "regstatus":
       return lang === "ar"
@@ -561,7 +577,7 @@ export function buildAiContext(s: CampSnapshot): string {
   ctx.push(`Audience: psychologists & psychological practitioners from ALL wilayas of Algeria`);
   ctx.push(`Slogan AR: ${s.sloganAr}`);
   ctx.push(`Slogan FR: ${s.sloganFr}`);
-  ctx.push(`Fee: ${s.fee > 0 ? `${s.fee} DZD` : "to be announced"}`);
+  ctx.push(`Fees: specialists ${s.fee > 0 ? `${s.fee} DZD` : "TBA"} / students ${s.studentFee > 0 ? `${s.studentFee} DZD` : "TBA"}`);
   ctx.push(`Seats: ${registered}/${s.totalSeats} taken, ${s.seatsLeft} left. Registration ${s.registrationOpen ? "OPEN" : "CLOSED"}`);
   ctx.push(`WhatsApp: ${s.whatsapp ? fmtPhone(s.whatsapp) : "n/a"}`);
   ctx.push(`Email: ${s.email}`);

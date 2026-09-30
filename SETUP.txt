@@ -1,8 +1,47 @@
 ==================================================
-Happy inside expérience — النسخة النهائية v9 / Version finale v9
+Happy inside expérience — النسخة النهائية v10 / Version finale v10
 مخيم الأخصائيين النفسيين في الجزائر — 16–19 أكتوبر 2026
 جاهز للنشر على Vercel و Railway ✈️ / Prêt pour Vercel & Railway
 ==================================================
+
+【 جديد في v10 / Nouveau dans v10 — التسجيل بالولايات الـ69 + التسعير المزدوج 】
+✔ قائمة الولايات الرسمية (69 ولاية): كل حقول الولاية في الموقع أصبحت
+  قائمة منسدلة تضم ولايات الجمهورية الجزائرية الـ69 الرسمية
+  (48 ولاية تاريخية + 10 ولايات أُحدثت سنة 2019 + 11 ولاية أُحدثت
+  في 16 نوفمبر 2025 وفق الإصلاح الإداري الإقليمي)، بالعربية
+  والفرنسية مع أرقامها الرسمية — بدل الكتابة الحرة. القيمة
+  المخزّنة هي الاسم العربي، فتتوافق مع البيانات القديمة.
+✔ زر «سجل الآن» أصبح «احجز مقعدك الآن» (وفرنسياً «Réservez votre
+  place»): عند الضغط ينتقل مباشرة إلى بطاقة التسجيل في المخيّم داخل
+  تبويب «تسجيلي» في لوحة التحكم. إذا لم يكن الزائر مسجلاً يوجّه
+  أولاً لإنشاء حساب، ثم يُسجَّل دخوله تلقائياً ويعود مباشرة إلى
+  البطاقة ليضغط «احجز مقعدي الآن» ويُكمل الحجز.
+✔ تسعير مزدوج يحدده المدير: سعر خاص بالطلبة (الطلبة) وسعار خاص
+  بالأخصائيين (الأخصائيين) تضبطهما من تبويب الإعدادات في لوحة
+  التحكم. عند إنشاء الحساب يختار المستخدم صفته (طالب/أخصائي)
+  فيُحسب المبلغ المستحق تلقائياً حسب صفته ويظهر في بطاقة الحجز
+  وفي تفاصيل كل حجز يراها المدير (الصفة + المبلغ المستحق).
+✔ تحديث شامل للواجهة: ترجمة كاملة عربية/فرنسية لكل العناصر الجديدة،
+  وتصميم متجاوب بالكامل على الهاتف والحاسوب.
+✔ Liste officielle des 69 wilayas : tous les champs « wilaya » sont
+  désormais des listes déroulantes (48 wilayas historiques + 10
+  créées en 2019 + 11 créées le 16 novembre 2025 — réforme
+  territoriale), en arabe et français avec code officiel. La valeur
+  stockée reste le nom arabe (compatibilité avec les anciennes
+  données).
+✔ Le bouton « سجل الآن » devient « احجز مقعدك الآن » (FR : « Réservez
+  votre place ») : clic = accès direct à la carte d'inscription du
+  camp dans l'onglet « تسجيلي » du tableau de bord. Si non connecté :
+  création de compte → connexion automatique → retour direct à la
+  carte pour cliquer « احجز مقعدي الآن ».
+✔ Tarification double définie par l'admin : tarif étudiants + tarif
+  spécialistes (onglet Paramètres). Le type de participant est choisi
+  à la création du compte (étudiant/spécialiste) ; le montant dû est
+  calculé automatiquement et affiché dans la carte de réservation et
+  dans les détails de chaque réservation côté admin.
+✔ Interface mise à jour : traduction complète AR/FR, 100% responsive
+  mobile & desktop.
+
 
 【 جديد في v9 / Nouveau dans v9 — إصلاح فشل البناء على Railway/Docker 】
 ✔ استبدال next/font/google بخطوط مستضافة محلياً داخل المشروع

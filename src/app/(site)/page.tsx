@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/i18n/context";
+import { useSession } from "@/lib/session-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import StatsCounters from "@/components/shared/stats-counters";
@@ -78,6 +80,45 @@ function useCountdown(target: string) {
     return () => clearInterval(iv);
   }, [target]);
   return diff;
+}
+
+/* BookCta — the "احجز مقعدك الآن" button used across the landing page.
+   Logged-in users go straight to the camp registration card inside the
+   dashboard ("تسجيلي" tab); visitors are sent to account creation first,
+   and the register/login pages bring them back to that same card after
+   (auto-)login. */
+function BookCta({
+  className,
+  variant = "default",
+  size = "lg",
+  children,
+}: {
+  className?: string;
+  variant?: "default" | "outline";
+  size?: "default" | "lg" | "sm";
+  children: React.ReactNode;
+}) {
+  const { user, loading } = useSession();
+  const router = useRouter();
+  const book = () => {
+    if (loading) return; // session still resolving — ignore momentary clicks
+    if (user) {
+      router.push("/dashboard?tab=registration&book=1");
+    } else {
+      router.push("/register?redirect=booking");
+    }
+  };
+  return (
+    <Button
+      size={size}
+      variant={variant}
+      onClick={book}
+      className={className}
+      aria-label={typeof children === "string" ? children : undefined}
+    >
+      {children}
+    </Button>
+  );
 }
 
 export default function LandingPage() {
@@ -175,13 +216,14 @@ export default function LandingPage() {
 
               {/* CTAs */}
               <div className="reveal-up mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start" style={{ animationDelay: "460ms" }}>
-                <Link href="/register">
-                  <Button size="lg" className="group relative overflow-hidden rounded-full px-8 text-base font-extrabold shadow-xl shadow-brand/30">
-                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-500 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full" />
-                    <PartyPopper className="h-5 w-5" />
-                    {t.hero.ctaRegister}
-                  </Button>
-                </Link>
+                <BookCta
+                  size="lg"
+                  className="group relative overflow-hidden rounded-full px-8 text-base font-extrabold shadow-xl shadow-brand/30"
+                >
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-500 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full" />
+                  <PartyPopper className="h-5 w-5" />
+                  {t.hero.ctaRegister}
+                </BookCta>
                 <a href="#program">
                   <Button size="lg" variant="outline" className="rounded-full px-7 text-base font-bold">
                     {t.hero.ctaLearnMore}
@@ -285,11 +327,12 @@ export default function LandingPage() {
                 <h3 className="text-xl font-black sm:text-2xl">{t.campReg.title}</h3>
                 <p className="text-sm text-muted-foreground">{t.campReg.subtitle}</p>
               </div>
-              <Link href="/register">
-                <Button size="lg" className="rounded-full px-7 font-extrabold shadow-lg shadow-brand/30">
-                  {t.hero.ctaRegister} ✨
-                </Button>
-              </Link>
+              <BookCta
+                size="lg"
+                className="rounded-full px-7 font-extrabold shadow-lg shadow-brand/30"
+              >
+                {t.hero.ctaRegister} ✨
+              </BookCta>
             </div>
             {stats ? (
               <SeatProgress registered={stats.registered} total={stats.totalSeats} />
@@ -340,12 +383,10 @@ export default function LandingPage() {
                   <h3 className="text-lg font-black leading-snug">{slogan}</h3>
                   <p className="mt-2 text-sm opacity-90">{t.footer.about}</p>
                 </div>
-                <Link href="/register">
-                  <Button className="rounded-full bg-white font-extrabold text-brand hover:bg-white/90">
-                    {t.hero.ctaRegister}
-                    <Arrow className="h-4 w-4" />
-                  </Button>
-                </Link>
+                <BookCta className="rounded-full bg-white font-extrabold text-brand hover:bg-white/90">
+                  {t.hero.ctaRegister}
+                  <Arrow className="h-4 w-4" />
+                </BookCta>
               </div>
             </div>
           </div>
@@ -504,11 +545,13 @@ export default function LandingPage() {
                     {t.nav.faq}
                   </Button>
                 </Link>
-                <Link href="/register">
-                  <Button size="lg" variant="outline" className="rounded-full border-white/60 bg-white/10 px-7 font-extrabold text-white hover:bg-white/20">
-                    {t.hero.ctaRegister} ✨
-                  </Button>
-                </Link>
+                <BookCta
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full border-white/60 bg-white/10 px-7 font-extrabold text-white hover:bg-white/20"
+                >
+                  {t.hero.ctaRegister} ✨
+                </BookCta>
               </div>
             </div>
           </div>
