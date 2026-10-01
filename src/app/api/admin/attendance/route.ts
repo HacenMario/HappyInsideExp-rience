@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { collections } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth";
-import { ensureBookingCode } from "@/lib/booking-code";
+import { ensureBookingCode, normalizeScannedCode } from "@/lib/booking-code";
 
 export const dynamic = "force-dynamic";
 
@@ -31,14 +31,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, undone: true });
     }
 
-    const rawCode = String(body?.code || "")
-      .trim()
-      .toUpperCase()
-      .replace(/\s+/g, "");
-    if (!rawCode) return NextResponse.json({ error: "missing_code" }, { status: 400 });
-
-    // Accept both "HIEX-XXXXXX" and the bare suffix "XXXXXX"
-    const normalized = rawCode.startsWith("HIEX-") ? rawCode : `HIEX-${rawCode}`;
+    // Robust parsing: accepts "HIEX-XXXXXX", "XXXXXX", "HIEX-XXXXXX • NAME"
+    // (old card QR format), sloppy spacing/separators — anything realistic.
+    const normalized = normalizeScannedCode(String(body?.code || ""));
+    if (!normalized) return NextResponse.json({ error: "missing_code" }, { status: 400 });
 
     const reg = await c.registrations.findOne({ code: normalized });
     if (!reg) {

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useLang } from "@/lib/i18n/context";
+import { normalizeScannedCode } from "@/lib/scan-code";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,8 @@ import {
   QrCode,
   Search,
   Sparkles,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
 interface AdminReg {
@@ -69,6 +72,43 @@ interface CheckinResult {
   attendedAt: string;
 }
 
+type CheckinOutcome =
+  | { ok: true; already: boolean; participant: CheckinResult }
+  | { ok: false; error: string };
+
+interface ScanFeedback {
+  kind: "ok" | "dup" | "err";
+  msg: string;
+  sub?: string;
+  at: number;
+}
+
+/* Short confirmation beep / error buzz — no audio assets needed. */
+function playTone(ok: boolean) {
+  try {
+    const Ctx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.value = ok ? 920 : 300;
+    const t0 = ctx.currentTime;
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.22, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + (ok ? 0.22 : 0.4));
+    osc.start(t0);
+    osc.stop(t0 + 0.45);
+    setTimeout(() => void ctx.close().catch(() => {}), 600);
+  } catch {
+    /* audio not available — silent feedback fallback */
+  }
+}
+
 const fmtTime = (iso: string, lang: string) =>
   new Date(iso).toLocaleString(lang === "ar" ? "ar-DZ" : "fr-FR", {
     day: "numeric",
@@ -86,10 +126,12 @@ export default function AttendanceTab() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
   const [bulkBusy, setBulkBusy] = useState(false);
   const [lastResult, setLastResult] = useState<CheckinResult | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scannerStarting, setScannerStarting] = useState(false);
+  const [scanFeedback, setScanFeedback] = useState<ScanFeedback | null>(null);
   const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => void } | null>(null);
   const lastScanRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
   const [search, setSearch] = useState("");
@@ -111,10 +153,30 @@ export default function AttendanceTab() {
     return () => clearInterval(iv);
   }, [load]);
 
+  const errMsg = useCallback(
+    (err: string) => {
+      const msgs: Record<string, string> = {
+        invalid_code: A.invalidCode,
+        not_confirmed: A.notConfirmed,
+        cancelled_reg: A.cancelledReg,
+      };
+      return msgs[err] || t.common.error;
+    },
+    [A, t.common.error]
+  );
+
+  /*
+   * Check-in by ANY raw value (typed code, QR payload, old card format...).
+   * Returns a structured outcome so every caller (manual input / scanner)
+   * can render its own feedback. Uses busyRef — the function identity stays
+   * STABLE so the camera scanner never holds a stale closure.
+   */
   const doCheckin = useCallback(
-    async (rawCode: string, silent = false) => {
-      const clean = rawCode.trim().toUpperCase();
-      if (!clean || busy) return;
+    async (rawCode: string): Promise<CheckinOutcome> => {
+      const clean = normalizeScannedCode(rawCode);
+      if (!clean) return { ok: false, error: "invalid_code" };
+      if (busyRef.current) return { ok: false, error: "busy" };
+      busyRef.current = true;
       setBusy(true);
       try {
         const res = await fetch("/api/admin/attendance", {
@@ -125,44 +187,48 @@ export default function AttendanceTab() {
         const data = await res.json();
         if (res.ok) {
           const p = data.participant;
-          setLastResult({
+          const info: CheckinResult = {
             fullName: p.fullName,
             phone: p.phone,
             accountType: p.accountType,
             already: !!data.already,
             attendedAt: data.attendedAt,
-          });
-          if (!silent) {
-            toast({
-              title: data.already ? A.alreadyAttendedToast : A.checkedInToast,
-              description: p.fullName,
-            });
-          }
-          await load();
-          return true;
-        }
-        if (!silent) {
-          const msgs: Record<string, string> = {
-            invalid_code: A.invalidCode,
-            not_confirmed: A.notConfirmed,
-            cancelled_reg: A.cancelledReg,
           };
-          toast({
-            title: t.common.error,
-            description: msgs[data.error] || t.common.error,
-            variant: "destructive",
-          });
+          setLastResult(info);
+          await load();
+          return { ok: true, already: !!data.already, participant: info };
         }
-        return false;
+        return { ok: false, error: String(data.error || "server_error") };
       } catch {
-        if (!silent) toast({ title: t.common.error, variant: "destructive" });
-        return false;
+        return { ok: false, error: "network" };
       } finally {
+        busyRef.current = false;
         setBusy(false);
       }
     },
-    [busy, load, A, t.common.error]
+    [load]
   );
+
+  /* Manual input submit — with explicit toasts. */
+  const submitManual = useCallback(async () => {
+    if (!code.trim() || busyRef.current) return;
+    const out = await doCheckin(code);
+    if (out.ok) {
+      toast({
+        title: out.already ? A.alreadyAttendedToast : A.checkedInToast,
+        description: out.participant.fullName,
+      });
+    } else if (out.error !== "busy") {
+      toast({ title: t.common.error, description: errMsg(out.error), variant: "destructive" });
+    }
+    setCode("");
+  }, [code, doCheckin, A, t.common.error, errMsg]);
+
+  /* Always-fresh doCheckin for the camera scanner callback. */
+  const doCheckinRef = useRef(doCheckin);
+  useEffect(() => {
+    doCheckinRef.current = doCheckin;
+  }, [doCheckin]);
 
   /* ---------- QR camera scanner (html5-qrcode, loaded lazily) ---------- */
   const stopScanner = useCallback(async () => {
@@ -176,23 +242,61 @@ export default function AttendanceTab() {
     }
   }, []);
 
+  /* Wait until the dialog has actually mounted the reader element. */
+  const waitForReader = () =>
+    new Promise<void>((resolve, reject) => {
+      const t0 = Date.now();
+      const tick = () => {
+        if (document.getElementById("qr-reader-region")) return resolve();
+        if (Date.now() - t0 > 4000) return reject(new Error("reader-region-missing"));
+        setTimeout(tick, 60);
+      };
+      tick();
+    });
+
   const startScanner = useCallback(async () => {
     setScannerStarting(true);
     try {
+      await waitForReader();
       const { Html5Qrcode } = await import("html5-qrcode");
-      // give the dialog a beat to mount the reader element
-      await new Promise((r) => setTimeout(r, 250));
       const scanner = new Html5Qrcode("qr-reader-region", { verbose: false });
       scannerRef.current = scanner as unknown as { stop: () => Promise<void>; clear: () => void };
       await scanner.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 230, height: 230 } },
+        {
+          fps: 10,
+          /* responsive square viewfinder — follows the reader width */
+          qrbox: (viewfinderWidth: number) => {
+            const edge = Math.max(140, Math.floor(viewfinderWidth * 0.72));
+            return { width: edge, height: edge };
+          },
+        },
         (decoded: string) => {
+          const clean = normalizeScannedCode(decoded);
+          if (!clean) return;
           const now = Date.now();
-          if (decoded === lastScanRef.current.code && now - lastScanRef.current.at < 3500) return;
-          lastScanRef.current = { code: decoded, at: now };
-          doCheckin(decoded, true).then((ok) => {
-            if (ok) toast({ title: A.checkedInToast });
+          if (clean === lastScanRef.current.code && now - lastScanRef.current.at < 3500) return;
+          lastScanRef.current = { code: clean, at: now };
+          void doCheckinRef.current(clean).then((out) => {
+            if (out.ok) {
+              playTone(true);
+              navigator.vibrate?.(70);
+              setScanFeedback({
+                kind: out.already ? "dup" : "ok",
+                msg: out.participant.fullName,
+                sub: clean,
+                at: Date.now(),
+              });
+              toast({
+                title: out.already ? A.alreadyAttendedToast : A.checkedInToast,
+                description: out.participant.fullName,
+              });
+            } else if (out.error !== "busy") {
+              playTone(false);
+              navigator.vibrate?.([70, 50, 70]);
+              setScanFeedback({ kind: "err", msg: errMsg(out.error), sub: clean, at: Date.now() });
+              toast({ title: t.common.error, description: errMsg(out.error), variant: "destructive" });
+            }
           });
         },
         () => {}
@@ -203,10 +307,12 @@ export default function AttendanceTab() {
     } finally {
       setScannerStarting(false);
     }
-  }, [doCheckin, A, t.common.error]);
+  }, [A, t.common.error, errMsg]);
 
   const openScanner = () => {
     setLastResult(null);
+    setScanFeedback(null);
+    lastScanRef.current = { code: "", at: 0 };
     setScannerOpen(true);
     startScanner();
   };
@@ -362,7 +468,7 @@ export default function AttendanceTab() {
                 onChange={(e) => setCode(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    doCheckin(code).then(() => setCode(""));
+                    void submitManual();
                   }
                 }}
                 placeholder={A.codePlaceholder}
@@ -371,7 +477,7 @@ export default function AttendanceTab() {
               />
             </div>
             <Button
-              onClick={() => doCheckin(code).then(() => setCode(""))}
+              onClick={() => void submitManual()}
               disabled={busy || !code.trim()}
               className="h-11 rounded-xl font-extrabold shadow-md shadow-brand-2/25"
             >
@@ -583,6 +689,47 @@ export default function AttendanceTab() {
               {A.cameraStarting}
             </div>
           ) : null}
+          {scanFeedback ? (
+            <div
+              role="status"
+              className={
+                "flex items-start gap-2.5 rounded-2xl border px-4 py-3 " +
+                (scanFeedback.kind === "ok"
+                  ? "border-brand-2/35 bg-brand-2/10"
+                  : scanFeedback.kind === "dup"
+                    ? "border-amber-500/35 bg-amber-500/10"
+                    : "border-destructive/35 bg-destructive/10")
+              }
+            >
+              {scanFeedback.kind === "ok" ? (
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-2" />
+              ) : scanFeedback.kind === "dup" ? (
+                <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+              ) : (
+                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+              )}
+              <div className="min-w-0">
+                <p className="text-sm font-black leading-snug">
+                  {scanFeedback.kind === "ok"
+                    ? A.checkedInToast
+                    : scanFeedback.kind === "dup"
+                      ? A.alreadyAttendedToast
+                      : t.common.error}
+                </p>
+                <p className="mt-0.5 truncate text-xs font-bold text-foreground/80">{scanFeedback.msg}</p>
+                {scanFeedback.sub ? (
+                  <p className="mt-0.5 font-mono text-[10px] text-muted-foreground" dir="ltr">
+                    {scanFeedback.sub}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          ) : (
+            <p className="flex items-center justify-center gap-1.5 text-center text-[11px] font-bold text-muted-foreground">
+              <ScanLine className="h-3.5 w-3.5" />
+              {A.scanLive}
+            </p>
+          )}
         </DialogContent>
       </Dialog>
     </div>

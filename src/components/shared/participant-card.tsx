@@ -11,7 +11,9 @@ import { Download, Loader2, IdCard } from "lucide-react";
  * Digital participant card + QR code
  * - Rendered with INLINE HEX STYLES ONLY (no Tailwind/oklch) so the
  *   PNG download via html2canvas-pro is pixel-perfect.
- * - QR encodes "CODE • NAME" (works offline at the camp gate).
+ * - QR encodes the pure booking code "HIEX-XXXXXX" — scanned in one
+ *   shot by the admin check-in scanner (older cards encoding
+ *   "CODE • NAME" remain fully supported by the shared parser).
  * ============================================================ */
 
 interface ParticipantCardProps {
@@ -74,7 +76,7 @@ export default function ParticipantCard({
     let alive = true;
     import("qrcode")
       .then(({ default: QRCode }) =>
-        QRCode.toDataURL(`${code} • ${fullName}`, {
+        QRCode.toDataURL(code, {
           margin: 1,
           width: 280,
           errorCorrectionLevel: "M",
@@ -88,7 +90,7 @@ export default function ParticipantCard({
     return () => {
       alive = false;
     };
-  }, [code, fullName]);
+  }, [code]);
 
   const isAr = lang === "ar";
   const typeLabel = accountType === "student"

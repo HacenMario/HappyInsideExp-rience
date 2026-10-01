@@ -378,6 +378,8 @@ export const dictionary = {
     cert: {
       title: "شهادة الحضور",
       downloadBtn: "تحميل الشهادة PDF",
+      printBtn: "طباعة",
+      generating: "جارٍ إنشاء ملف PDF عالي الجودة...",
       downloaded: "تم تنزيل الشهادة بنجاح",
       verifyNote: "رقم الشهادة للتحقق:",
       noneTitle: "لا توجد شهادة متاحة بعد",
@@ -479,6 +481,7 @@ export const dictionary = {
         scanBtn: "مسح QR",
         scanTitle: "مسح رمز QR",
         scanDesc: "وجّه كاميرا الجهاز نحو رمز QR في بطاقة المشارك",
+        scanLive: "التقاط الرمز يسجّل الحضور تلقائياً — بصوت وتنبيه",
         cameraStarting: "جارٍ تشغيل الكاميرا...",
         cameraError: "تعذر الوصول إلى الكاميرا — تحقق من الإذن أو استخدم الإدخال اليدوي",
         checkedInToast: "تم تسجيل الحضور ✅",
@@ -1057,6 +1060,8 @@ export const dictionary = {
     cert: {
       title: "Certificat de présence",
       downloadBtn: "Télécharger le certificat (PDF)",
+      printBtn: "Imprimer",
+      generating: "Génération du PDF haute qualité...",
       downloaded: "Certificat téléchargé avec succès",
       verifyNote: "Numéro de vérification :",
       noneTitle: "Aucun certificat disponible pour le moment",
@@ -1157,6 +1162,7 @@ export const dictionary = {
         scanBtn: "Scanner le QR",
         scanTitle: "Scanner le code QR",
         scanDesc: "Dirigez la caméra vers le QR de la carte du participant",
+        scanLive: "Le QR détecté enregistre automatiquement la présence — avec son et alerte",
         cameraStarting: "Démarrage de la caméra...",
         cameraError: "Accès caméra impossible — vérifiez l'autorisation ou utilisez la saisie manuelle",
         checkedInToast: "Présence enregistrée ✅",

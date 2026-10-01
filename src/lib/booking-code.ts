@@ -6,6 +6,9 @@ import { collections, type CampRegistrationDoc } from "./mongodb";
  * Format: HIEX-XXXXXX (6 unambiguous characters, no 0/O/1/I/L). */
 const ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 
+// Server-side re-export of the shared, client-safe code parser.
+export { normalizeScannedCode } from "./scan-code";
+
 export function generateBookingCode(): string {
   let suffix = "";
   for (let i = 0; i < 6; i++) suffix += ALPHABET[randomInt(ALPHABET.length)];

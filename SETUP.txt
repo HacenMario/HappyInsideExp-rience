@@ -1,8 +1,67 @@
 ==================================================
-Happy inside expérience — النسخة النهائية v11 / Version finale v11
+Happy inside expérience — النسخة النهائية v12 / Version finale v12
 مخيم الأخصائيين النفسيين في الجزائر — 16–19 أكتوبر 2026
 جاهز للنشر على Vercel و Railway ✈️ / Prêt pour Vercel & Railway
 ==================================================
+
+【 جديد في v12 / Nouveau dans v12 — إصلاح الشهادة + إصلاح الماسح 】
+✔ إصلاح شهادة الحضور (الأهم): كانت الشهادة تظهر مشوّهة ومزاحمة في
+  مساحة صغيرة على الهاتف وفي ملف PDF وفي الطباعة. أُعيدت هندستها
+  بالكامل: معاينة A4 أفقية تتكيّف مع عرض الشاشة بثبات تام حتى في
+  الواجهة العربية RTL (كانت الكاميرا الخفية للتحويل تقتطع جزءاً من
+  الشهادة)، وملف PDF يُبنى الآن من نسخة أصلية كاملة الأبعاد خارج
+  الشاشة بدقة 2.5× — مطابق تماماً لقياسات A4 (297×210 مم) وبدون أي
+  تشوه أو تزاحم، مع تسمية الملف برقم الشهادة.
+✔ زر طباعة جديد «طباعة»: يطبع الشهادة مباشرة على ورق A4 أفقية —
+  تُخفى كل واجهات الموقع تلقائياً ولا يُطبع إلا الشهادة نفسها.
+✔ تصميم الشهادة محسّن: زوايا مزخرفة، حجم اسم يتكيّف تلقائياً مع
+  طول الاسم (لا تداخل أبداً)، شارة الفئة + رقم الحجز على الشهادة،
+  وتصحيح خطأ لغوي في النص العربي (شارك/شاركت).
+✔ إصلاح ماسح QR (الأهم): الكاميرا كانت تقرأ الرمز ولا يحدث أي تسجيل
+  حضور! السبب: بطاقة QR القديمة تحتوي «الرقم + الاسم» وكان يُرسل
+  كاملاً إلى الخادم فيُرفض بصمت. أصبح لديك محلّل ذكي مشترك يفصل
+  رقم الحجز من أي صيغة («HIEX-XXXXXX • الاسم»، رقماً فقط، صيغة
+  قديمة، مسافات/أقواس) ويُطبَّق في الماسح وفي حقل الإدخال اليدوي
+  وفي الخادم معاً. بطاقات QR الجديدة تحمل الرقماً فقط لموثوقية
+  أقصى، والبطاقات القديمة المحمّلة سابقاً تبقى تعمل.
+✔ تأكيد بصري وصوتي للمسح: لوحة نتيجة فورية داخل نافذة الماسح
+  (أخضر = تم تسجيل الحضور، برتقالي = حاضر مسبقاً، أحمر = رمز غير
+  صحيح/غير مؤكد) + نغمة تأكيد / تنبيه خطأ + اهتزاز على الهاتف،
+  مع إشعارات توست صريحة لكل نتيجة — لن يمر أي مسح بصمت بعد اليوم.
+✔ تحسينات الكاميرا: انتظار جاهزية نافذة الماسح قبل التشغيل (بدون
+  فشل عند فتح النافذة بسرعة)، وإطار تحديد يتكيّف مع حجم الشاشة.
+✔ تجاوب كامل: بطاقة الشهادة والمعاينة وأزرارها وتبويب الحضور كلها
+  متناسقة على الهاتف والحاسوب (اختبار 390 بكسل ← سطح مكتب).
+✔ Réparation du certificat (essentiel) : le certificat apparaissait
+  déformé et entassé sur mobile, en PDF et à l'impression. Refonte
+  complète : aperçu A4 paysage qui s'adapte à l'écran avec un
+  ancrage stable même en RTL (l'ancien ancrage de transformation
+  rognait une partie du certificat), et PDF généré depuis une
+  copie maîtresse pleine taille hors écran à 2,5× — aux mesures
+  exactes du A4 (297×210 mm), sans aucune déformation, nom de
+  fichier = numéro du certificat.
+✔ Nouveau bouton « Imprimer » : impression directe A4 paysage,
+  toutes les interfaces du site masquées, seul le certificat sort.
+✔ Design affiné : ornements de coins, taille du nom adaptative
+  (aucun chevauchement), badge catégorie + code de réservation sur
+  le certificat, correction d'une coquille dans le texte arabe.
+✔ Réparation du scanner QR (essentiel) : la caméra lisait le code
+  sans rien enregistrer ! Cause : l'ancienne carte QR contenait
+  « code + nom » et la chaîne entière était envoyée puis rejetée
+  en silence. Un analyseur intelligent partagé extrait désormais
+  le code depuis n'importe quel format (« HIEX-XXXXXX • nom »,
+  code seul, ancien format, espaces/majuscules) — appliqué dans le
+  scanner, la saisie manuelle ET le serveur. Les nouvelles cartes
+  encodent le code seul ; les cartes déjà téléchargées restent
+  valables.
+✔ Confirmation visuelle et sonore : panneau de résultat en direct
+  dans la fenêtre de scan (vert = présence enregistrée, orange =
+  déjà présent, rouge = code invalide/non confirmé) + bip de
+  confirmation / d'erreur + vibration sur mobile + toasts explicites.
+✔ Caméra fiabilisée : attente du montage du lecteur avant
+  démarrage, cadre de visée adaptatif à la taille de l'écran.
+✔ Responsive complet : certificat, aperçu, boutons et onglet
+  présence harmonisés du mobile (390 px) au bureau.
 
 【 جديد في v11 / Nouveau dans v11 — البطاقة الرقمية + قائمة الانتظار + الشهادات 】
 ✔ بطاقة المشارك الرقمية + QR Code: بعد الحجز تظهر في لوحة المشارك
