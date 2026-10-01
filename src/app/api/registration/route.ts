@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { collections } from "@/lib/mongodb";
 import { getSession } from "@/lib/auth";
+import { ensureBookingCode, generateBookingCode } from "@/lib/booking-code";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +22,48 @@ export async function GET() {
       userId: session.uid,
       status: { $in: ["pending", "confirmed"] },
     });
+    if (reg) await ensureBookingCode(reg);
+
+    // Waiting-list state for users without an active registration
+    let waitlist: {
+      position: number;
+      status: "waiting" | "promoted";
+      createdAt: Date;
+    } | null = null;
+    if (!reg) {
+      const entry = await c.waitlist.findOne({
+        userId: session.uid,
+        status: { $in: ["waiting", "promoted"] },
+      });
+      if (entry) {
+        const position =
+          entry.status === "promoted"
+            ? 0
+            : (await c.waitlist.countDocuments({
+                status: "waiting",
+                createdAt: { $lte: entry.createdAt },
+              })) || 1;
+        waitlist = {
+          position,
+          status: entry.status === "promoted" ? "promoted" : "waiting",
+          createdAt: entry.createdAt,
+        };
+      }
+    }
+
     return NextResponse.json({
-      registration: reg ? { ...reg, _id: reg._id!.toString() } : null,
+      registration: reg
+        ? {
+            ...reg,
+            _id: reg._id!.toString(),
+            code: reg.code,
+            attended: !!reg.attended,
+            certificate: reg.certificate?.issued
+              ? { issued: true, number: reg.certificate.number, issuedAt: reg.certificate.issuedAt }
+              : null,
+          }
+        : null,
+      waitlist,
     });
   } catch (e) {
     console.error(e);
@@ -56,7 +97,10 @@ export async function POST(req: NextRequest) {
       status: { $in: ["pending", "confirmed"] },
     });
     if (occupied >= settings.totalSeats) {
-      return NextResponse.json({ error: "full" }, { status: 409 });
+      return NextResponse.json(
+        { error: "full", waitlistAvailable: true },
+        { status: 409 }
+      );
     }
 
     const body = await req.json().catch(() => ({}));
@@ -78,6 +122,16 @@ export async function POST(req: NextRequest) {
           : settings.fee ?? 0
         : settings.fee ?? 0;
 
+    const code = await (async () => {
+      // unique booking code for the participant card + QR
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const candidate = generateBookingCode();
+        const clash = await c.registrations.findOne({ code: candidate });
+        if (!clash) return candidate;
+      }
+      return `HIEX-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+    })();
+
     await c.registrations.insertOne({
       userId: session.uid,
       userFullName: session.fullName,
@@ -85,6 +139,7 @@ export async function POST(req: NextRequest) {
       accountType,
       amountDue,
       motivationAr: motivation ? String(motivation).slice(0, 500) : "",
+      code,
       status: "pending", // stays pending until the admin validates the payment
       createdAt: new Date(),
     });

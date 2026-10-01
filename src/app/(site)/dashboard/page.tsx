@@ -18,6 +18,7 @@ import { SeatProgress } from "@/components/shared/seat-progress";
 import { LogoSkeleton } from "@/components/shared/logo";
 import { useCampInfo } from "@/components/shared/camp-info";
 import { WilayaSelect } from "@/components/shared/wilaya-select";
+import ParticipantCard from "@/components/shared/participant-card";
 import { fileToDataUrl } from "@/lib/image-client";
 import {
   UserRound,
@@ -37,6 +38,11 @@ import {
   LogIn,
   Banknote,
   Hourglass,
+  Award,
+  Download,
+  ListOrdered,
+  ArrowUpCircle,
+  LogOut,
 } from "lucide-react";
 
 interface RegInfo {
@@ -45,6 +51,15 @@ interface RegInfo {
   accountType?: "student" | "specialist";
   amountDue?: number | null;
   amountPaid: number | null;
+  code?: string;
+  attended?: boolean;
+  certificate?: { issued: boolean; number: string; issuedAt: string } | null;
+  createdAt: string;
+}
+
+interface WaitInfo {
+  position: number;
+  status: "waiting" | "promoted";
   createdAt: string;
 }
 
@@ -60,6 +75,7 @@ export default function DashboardPage() {
   const camp = useCampInfo();
 
   const [reg, setReg] = useState<RegInfo | null>(null);
+  const [waitlist, setWaitlist] = useState<WaitInfo | null>(null);
   const [regLoading, setRegLoading] = useState(true);
   const [seats, setSeats] = useState<{ registered: number; totalSeats: number; registrationOpen: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -79,6 +95,7 @@ export default function DashboardPage() {
       const regData = await regRes.json();
       const statsData = await statsRes.json();
       setReg(regData.registration);
+      setWaitlist(regData.waitlist || null);
       setSeats(statsData);
     } catch {} finally {
       setRegLoading(false);
@@ -165,6 +182,48 @@ export default function DashboardPage() {
       const res = await fetch("/api/registration", { method: "DELETE" });
       if (res.ok) {
         toast({ title: t.common.success, description: t.campReg.cancelled });
+        await loadReg();
+      } else {
+        toast({ title: t.common.error, variant: "destructive" });
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const joinWaitlist = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/waitlist", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        toast({
+          title: t.campReg.waitlistJoined,
+          description: (t.campReg.waitlistJoinedDesc || "").replace("{n}", String(data.position ?? "")),
+        });
+        await loadReg();
+      } else {
+        const msgs: Record<string, string> = {
+          already_in_waitlist: t.campReg.waitlistAlready,
+          already_registered: t.campReg.alreadyRegistered,
+          not_full: t.campReg.waitlistNotFull,
+        };
+        toast({ title: t.common.error, description: msgs[data.error] || t.common.error, variant: "destructive" });
+      }
+    } catch {
+      toast({ title: t.common.error, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const leaveWaitlist = async () => {
+    if (!window.confirm(t.campReg.waitlistConfirmLeave)) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/waitlist", { method: "DELETE" });
+      if (res.ok) {
+        toast({ title: t.common.success, description: t.campReg.waitlistLeft });
         await loadReg();
       } else {
         toast({ title: t.common.error, variant: "destructive" });
@@ -305,6 +364,18 @@ export default function DashboardPage() {
                         <p>{t.campReg.pendingDesc}</p>
                         <p className="text-xs opacity-80">{t.campReg.contactAdminFee}</p>
                       </div>
+                      {/* Preliminary digital card (activates after payment confirmation) */}
+                      {reg.code ? (
+                        <div className="mt-7 border-t border-border/70 pt-7">
+                          <ParticipantCard
+                            fullName={user.fullName}
+                            accountType={user.accountType}
+                            gender={user.gender}
+                            code={reg.code}
+                            status="pending"
+                          />
+                        </div>
+                      ) : null}
                       <div className="mt-6">
                         <Button variant="outline" onClick={cancelReg} disabled={busy} className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive">
                           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
@@ -344,6 +415,43 @@ export default function DashboardPage() {
                         ? "مقعدك محجوز ومؤكد! سنتواصل معك قريباً بكل التفاصيل"
                         : "Ta place est réservée et confirmée ! Nous te contacterons bientôt avec tous les détails"}
                     </div>
+
+                    {/* Attendance certificate — visible ONLY after the admin issues it */}
+                    {reg.certificate?.issued ? (
+                      <div className="mx-auto mt-5 max-w-md rounded-2xl border border-amber-500/35 bg-gradient-to-r from-amber-500/10 via-amber-400/10 to-amber-500/10 p-5">
+                        <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-start">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-lg">
+                            <Award className="h-6 w-6" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-black">{t.dash.certReady}</p>
+                            <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground" dir="ltr">
+                              {reg.certificate.number}
+                            </p>
+                          </div>
+                          <a href="/certificate" target="_blank" rel="noreferrer">
+                            <Button className="h-10 rounded-xl bg-amber-500 font-extrabold text-white shadow-md shadow-amber-500/30 hover:bg-amber-500/90">
+                              <Download className="h-4 w-4" />
+                              {t.dash.certDownload}
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {/* Digital participant card + QR */}
+                    {reg.code ? (
+                      <div className="mt-7 border-t border-border/70 pt-7">
+                        <ParticipantCard
+                          fullName={user.fullName}
+                          accountType={user.accountType}
+                          gender={user.gender}
+                          code={reg.code}
+                          status="confirmed"
+                          attended={reg.attended}
+                        />
+                      </div>
+                    ) : null}
                     <div className="mt-6">
                       <Button variant="outline" onClick={cancelReg} disabled={busy} className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive">
                         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
@@ -352,6 +460,43 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   )
+                ) : waitlist ? (
+                  /* ===== Waiting list card ===== */
+                  <div className="text-center">
+                    <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-xl">
+                      <ListOrdered className="h-10 w-10" />
+                    </div>
+                    <h2 className="text-xl font-black">{t.campReg.waitlistTitle}</h2>
+                    <p className="mt-2 text-sm font-semibold text-muted-foreground">{t.campReg.waitlistSubtitle}</p>
+                    <div className="mx-auto mt-5 flex max-w-xs items-center justify-center gap-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 px-6 py-5">
+                      <div className="text-center">
+                        <p className="text-4xl font-black tabular-nums text-amber-500">{waitlist.position || 1}</p>
+                        <p className="mt-1 text-[11px] font-bold text-muted-foreground">{t.campReg.waitlistPosition}</p>
+                      </div>
+                      <div className="h-12 w-px bg-border" />
+                      <div className="text-start">
+                        <Badge className="gap-1 bg-amber-500/15 text-[11px] font-extrabold text-amber-600 dark:text-amber-400">
+                          <Hourglass className="h-3.5 w-3.5" />
+                          {waitlist.status === "promoted" ? t.campReg.waitlistPromoted : t.campReg.waitlistWaiting}
+                        </Badge>
+                        <p className="mt-2 max-w-44 text-[11px] leading-relaxed text-muted-foreground">{t.campReg.waitlistFifo}</p>
+                      </div>
+                    </div>
+                    <p className="mx-auto mt-4 max-w-md rounded-2xl border border-border bg-muted/40 p-4 text-xs font-semibold leading-relaxed text-muted-foreground">
+                      {t.campReg.waitlistNote}
+                    </p>
+                    <div className="mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={leaveWaitlist}
+                        disabled={busy}
+                        className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                        {t.campReg.waitlistLeave}
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   <div>
                     <div className="mb-5 text-center">
@@ -391,16 +536,34 @@ export default function DashboardPage() {
                         </span>
                       </div>
                     ) : null}
-                    <Button
-                      onClick={reserve}
-                      disabled={busy || !seats?.registrationOpen}
-                      className="h-13 w-full rounded-2xl py-6 text-base font-extrabold shadow-xl shadow-brand/30"
-                    >
-                      {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <PartyPopper className="h-5 w-5" />}
-                      {t.campReg.registerBtn}
-                    </Button>
-                    {!user ? null : null}
-                    {!seats?.registrationOpen ? (
+                    {seats && seats.registrationOpen && seats.registered >= seats.totalSeats ? (
+                      /* Seats full → join the waiting list instead */
+                      <div className="space-y-3">
+                        <div className="mx-auto flex max-w-sm items-center justify-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm font-extrabold text-amber-600 dark:text-amber-400">
+                          <Hourglass className="h-5 w-5" />
+                          {t.campReg.full}
+                        </div>
+                        <Button
+                          onClick={joinWaitlist}
+                          disabled={busy}
+                          className="h-13 w-full rounded-2xl bg-amber-500 py-6 text-base font-extrabold text-white shadow-xl shadow-amber-500/30 hover:bg-amber-500/90"
+                        >
+                          {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <ListOrdered className="h-5 w-5" />}
+                          {t.campReg.joinWaitlist}
+                        </Button>
+                        <p className="text-center text-xs text-muted-foreground">{t.campReg.waitlistNote}</p>
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={reserve}
+                        disabled={busy || !seats?.registrationOpen}
+                        className="h-13 w-full rounded-2xl py-6 text-base font-extrabold shadow-xl shadow-brand/30"
+                      >
+                        {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <PartyPopper className="h-5 w-5" />}
+                        {t.campReg.registerBtn}
+                      </Button>
+                    )}
+                    {!seats?.registrationOpen && !(seats && seats.registered >= seats.totalSeats) ? (
                       <p className="mt-3 text-center text-xs text-muted-foreground">{t.campReg.notifyMe}</p>
                     ) : null}
                   </div>

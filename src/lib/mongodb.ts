@@ -190,12 +190,37 @@ export interface CampRegistrationDoc {
   accountType?: "student" | "specialist"; // pricing category snapshot at booking time
   amountDue?: number; // price the registrant must pay (DZD) — snapshot of the admin pricing
   motivationAr?: string;
+  code?: string; // unique booking code shown on the digital card + QR (e.g. HIEX-4K7Q2B)
+  attended?: boolean; // admin check-in at the camp gate
+  attendedAt?: Date;
+  checkedInBy?: string; // admin full name who scanned/validated the attendance
+  certificate?: {
+    issued: boolean;
+    issuedAt: Date;
+    number: string; // HIEX-CERT-2026-0001
+    issuedBy?: string;
+  } | null;
   status: "pending" | "confirmed" | "cancelled";
   amountPaid?: number; // set when admin validates the payment
   paymentNote?: string;
   paidAt?: Date;
   confirmedAt?: Date;
   cancelledAt?: Date;
+  createdAt: Date;
+}
+
+/* Waiting list filled when all camp seats are taken. People are promoted
+ * FIFO (oldest waiting first) as soon as the admin frees a seat. */
+export interface WaitlistDoc {
+  _id?: unknown;
+  userId: string;
+  fullName: string;
+  phone: string;
+  accountType: "student" | "specialist";
+  wilaya?: string;
+  status: "waiting" | "promoted" | "left";
+  promotedRegistrationId?: string;
+  promotedAt?: Date;
   createdAt: Date;
 }
 
@@ -237,6 +262,7 @@ export async function collections() {
     suggestions: db.collection<SuggestionDoc>("suggestions"),
     faqs: db.collection<FaqDoc>("faqs"),
     registrations: db.collection<CampRegistrationDoc>("camp_registrations"),
+    waitlist: db.collection<WaitlistDoc>("camp_waitlist"),
     mobileDevices: db.collection<MobileDeviceDoc>("mobile_devices"),
     vapid: db.collection<VapidDoc>("vapid_keys"),
     seedMeta: db.collection<{ _id: string; version: number; seededAt: Date }>("seed_meta"),

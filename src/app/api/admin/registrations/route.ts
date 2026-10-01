@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { collections } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/auth";
+import { ensureBookingCode } from "@/lib/booking-code";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,12 @@ export async function GET() {
       wilaya: u?.wilaya || "",
       workplace: u?.workplace || "",
       avatar: u?.avatar || null,
+      code: r.code || "",
+      attended: !!r.attended,
+      attendedAt: r.attendedAt || null,
+      certificate: r.certificate?.issued
+        ? { issued: true, number: r.certificate.number, issuedAt: r.certificate.issuedAt }
+        : null,
       status: r.status,
       amountPaid: r.amountPaid ?? null,
       paymentNote: r.paymentNote || "",
@@ -63,6 +70,9 @@ export async function GET() {
   const collected = confirmed.reduce((s, r) => s + (r.amountPaid || 0), 0);
   const expected = confirmed.reduce((s, r) => s + (r.amountDue ?? fee), 0);
   const pendingPotential = pending.reduce((s, r) => s + (r.amountDue ?? fee), 0);
+  const attendedCount = registrations.filter((r) => r.attended && r.status !== "cancelled").length;
+  const certificatesIssued = registrations.filter((r) => r.certificate?.issued).length;
+  const waitingCount = await c.waitlist.countDocuments({ status: "waiting" });
 
   return NextResponse.json({
     registrations,
@@ -76,6 +86,9 @@ export async function GET() {
       expected,
       remaining: Math.max(0, expected - collected),
       pendingPotential,
+      attendedCount,
+      certificatesIssued,
+      waitingCount,
     },
   });
 }
@@ -195,5 +208,33 @@ export async function DELETE(req: NextRequest) {
       .catch(() => {});
   }
 
-  return NextResponse.json({ ok: true });
+  /* Seat freed → surface the first waiting person so the admin can promote
+     them with one click (the client shows a prompt with this data). */
+  let nextInLine: {
+    id: string;
+    fullName: string;
+    phone: string;
+    accountType: "student" | "specialist";
+  } | null = null;
+  if (reg && reg.status !== "cancelled") {
+    const settings = await c.settings.findOne({ key: "main" });
+    const totalSeats = settings?.totalSeats ?? 60;
+    const occupied = await c.registrations.countDocuments({
+      status: { $in: ["pending", "confirmed"] },
+    });
+    if (occupied < totalSeats) {
+      const first = await c.waitlist
+        .findOne({ status: "waiting" }, { sort: { createdAt: 1 } });
+      if (first) {
+        nextInLine = {
+          id: first._id!.toString(),
+          fullName: first.fullName,
+          phone: first.phone,
+          accountType: first.accountType,
+        };
+      }
+    }
+  }
+
+  return NextResponse.json({ ok: true, nextInLine });
 }

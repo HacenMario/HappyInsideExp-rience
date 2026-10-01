@@ -9,6 +9,7 @@ import { LogoSkeleton } from "@/components/shared/logo";
 import OverviewTab from "@/components/admin/overview-tab";
 import UsersTab from "@/components/admin/users-tab";
 import RegistrationsTab from "@/components/admin/registrations-tab";
+import AttendanceTab from "@/components/admin/attendance-tab";
 import SettingsTab from "@/components/admin/settings-tab";
 import AnnouncementsTab from "@/components/admin/announcements-tab";
 import SpeakersTab from "@/components/admin/speakers-tab";
@@ -22,6 +23,7 @@ import {
   LayoutDashboard,
   Users,
   CalendarCheck,
+  UserCheck,
   Settings2,
   Megaphone,
   Users2,
@@ -36,6 +38,7 @@ import {
 const TABS = [
   { key: "overview", icon: LayoutDashboard, badge: false },
   { key: "registrations", icon: CalendarCheck, badge: false },
+  { key: "attendance", icon: UserCheck, badge: false },
   { key: "users", icon: Users, badge: false },
   { key: "announcements", icon: Megaphone, badge: false },
   { key: "notifications", icon: BellRing, badge: false },
@@ -146,6 +149,7 @@ export default function AdminPage() {
           <div className="min-w-0 flex-1">
             {tab === "overview" ? <OverviewTab /> : null}
             {tab === "registrations" ? <RegistrationsTab /> : null}
+            {tab === "attendance" ? <AttendanceTab /> : null}
             {tab === "users" ? <UsersTab /> : null}
             {tab === "announcements" ? <AnnouncementsTab /> : null}
             {tab === "notifications" ? <NotificationsTab /> : null}

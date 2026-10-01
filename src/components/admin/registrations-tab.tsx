@@ -25,6 +25,10 @@ import {
   TrendingDown,
   Undo2,
   Info,
+  Hourglass,
+  ArrowUpCircle,
+  UserX,
+  Loader2,
 } from "lucide-react";
 
 interface Reg {
@@ -52,6 +56,19 @@ interface MoneySummary {
   expected: number;
   remaining: number;
   pendingPotential: number;
+  attendedCount?: number;
+  certificatesIssued?: number;
+  waitingCount?: number;
+}
+
+interface WaitEntry {
+  id: string;
+  fullName: string;
+  phone: string;
+  accountType: "student" | "specialist";
+  wilaya: string;
+  position: number;
+  createdAt: string;
 }
 
 type Filter = "all" | "pending" | "confirmed" | "cancelled";
@@ -68,6 +85,9 @@ export default function RegistrationsTab() {
   const [filter, setFilter] = useState<Filter>("all");
   const [amounts, setAmounts] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [waitlist, setWaitlist] = useState<WaitEntry[] | null>(null);
+  const [nextInLine, setNextInLine] = useState<WaitEntry | null>(null);
+  const [promoteBusy, setPromoteBusy] = useState(false);
 
   const R = t.admin.registrations;
 
@@ -98,6 +118,11 @@ export default function RegistrationsTab() {
           return next;
         });
       }
+    } catch {}
+    try {
+      const res = await fetch("/api/admin/waitlist", { cache: "no-store" });
+      const data = await res.json();
+      if (!data.error) setWaitlist(data.waiting);
     } catch {}
   }, []);
 
@@ -160,6 +185,46 @@ export default function RegistrationsTab() {
     const res = await fetch(`/api/admin/registrations?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       toast({ title: t.common.success });
+      const data = await res.json().catch(() => null);
+      if (data?.nextInLine) setNextInLine(data.nextInLine);
+      await load();
+    } else {
+      toast({ title: t.common.error, variant: "destructive" });
+    }
+  };
+
+  const promote = async (entry: { id: string; fullName: string }) => {
+    setPromoteBusy(true);
+    try {
+      const res = await fetch("/api/admin/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: entry.id, action: "promote" }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: R.promotedToast, description: entry.fullName });
+        setNextInLine(null);
+        await load();
+      } else if (data.error === "full") {
+        toast({ title: t.common.error, description: t.campReg.full, variant: "destructive" });
+        setNextInLine(null);
+      } else {
+        toast({ title: t.common.error, variant: "destructive" });
+      }
+    } finally {
+      setPromoteBusy(false);
+    }
+  };
+
+  const removeFromWaitlist = async (entry: { id: string }) => {
+    const res = await fetch("/api/admin/waitlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: entry.id, action: "remove" }),
+    });
+    if (res.ok) {
+      toast({ title: R.waitlistRemoved });
       await load();
     } else {
       toast({ title: t.common.error, variant: "destructive" });
@@ -238,6 +303,31 @@ export default function RegistrationsTab() {
         <div className="flex items-start gap-2 rounded-xl border border-brand-3/30 bg-brand-3/5 px-4 py-2.5 text-xs font-semibold text-brand-3">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
           {R.payHint}
+        </div>
+      ) : null}
+
+      {/* Freed seat → first in line can be promoted with one click */}
+      {nextInLine ? (
+        <div className="flex flex-col gap-3 rounded-2xl border border-amber-500/35 bg-amber-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-2.5">
+            <Hourglass className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+            <div>
+              <p className="text-sm font-black text-amber-600 dark:text-amber-400">{R.freedSeatTitle}</p>
+              <p className="mt-0.5 text-xs font-bold text-amber-700/80 dark:text-amber-300/80">
+                {R.nextInLine}: {nextInLine.fullName} · {nextInLine.accountType === "student" ? "🎓 " + t.common.student : "💼 " + t.common.specialist} · {""}
+                <span dir="ltr">{nextInLine.phone}</span>
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button onClick={() => promote(nextInLine)} disabled={promoteBusy} className="h-10 rounded-xl bg-amber-500 font-extrabold text-white shadow-md shadow-amber-500/30 hover:bg-amber-500/90">
+              {promoteBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUpCircle className="h-4 w-4" />}
+              {R.promoteBtn}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setNextInLine(null)} className="h-10 w-10 text-muted-foreground">
+              <XCircle className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       ) : null}
 
@@ -410,6 +500,123 @@ export default function RegistrationsTab() {
                               <span className="hidden xl:inline">{R.remove}</span>
                             </Button>
                           ) : null}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ===== Waiting list (FIFO) ===== */}
+      <Card className="card-glow border-0 p-0">
+        <CardContent className="p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 text-base font-black">
+                <Hourglass className="h-4.5 w-4.5 text-amber-500" />
+                {R.waitlistTitle}
+                {summary?.waitingCount ? (
+                  <Badge className="bg-amber-500/15 text-[10px] font-extrabold text-amber-600 dark:text-amber-400">
+                    {summary.waitingCount}
+                  </Badge>
+                ) : null}
+              </h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">{R.waitlistHint}</p>
+            </div>
+          </div>
+
+          {waitlist === null ? (
+            <div className="space-y-2">
+              {[0, 1].map((i) => (
+                <div key={i} className="shimmer h-12 rounded-xl" />
+              ))}
+            </div>
+          ) : waitlist.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">{R.waitlistEmpty}</p>
+          ) : (
+            <div className="scroll-area max-h-72 overflow-auto rounded-xl border border-border">
+              <Table>
+                <TableHeader className="sticky top-0 z-10 bg-muted/95 backdrop-blur">
+                  <TableRow>
+                    <TableHead className="w-14">#</TableHead>
+                    <TableHead className="min-w-36">{t.common.fullName}</TableHead>
+                    <TableHead>{t.common.phone}</TableHead>
+                    <TableHead className="hidden md:table-cell">{R.category}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t.common.wilaya}</TableHead>
+                    <TableHead className="text-end">{t.common.actions}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {waitlist.map((w) => (
+                    <TableRow key={w.id} className={w.position === 1 ? "bg-amber-500/5" : ""}>
+                      <TableCell>
+                        <span
+                          className={
+                            "flex h-7 w-7 items-center justify-center rounded-full text-xs font-black " +
+                            (w.position === 1
+                              ? "bg-amber-500 text-white shadow-md shadow-amber-500/30"
+                              : "bg-muted text-muted-foreground")
+                          }
+                        >
+                          {w.position}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-sm font-bold">
+                        {w.fullName}
+                        {w.position === 1 ? (
+                          <span className="ms-1.5 text-[10px] font-extrabold text-amber-600 dark:text-amber-400">
+                            {R.nextInLine}
+                          </span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell className="text-xs" dir="ltr">
+                        <a href={`tel:${w.phone}`} className="font-semibold text-brand hover:underline">
+                          {w.phone}
+                        </a>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge
+                          variant="outline"
+                          className={
+                            "gap-1 text-[10px] font-extrabold " +
+                            (w.accountType === "student"
+                              ? "border-brand-2/40 text-brand-2"
+                              : "border-brand/40 text-brand")
+                          }
+                        >
+                          {w.accountType === "student" ? "🎓" : "💼"}
+                          {w.accountType === "student" ? t.common.student : t.common.specialist}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden text-xs md:table-cell">{w.wilaya || "—"}</TableCell>
+                      <TableCell className="text-end">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            size="sm"
+                            onClick={() => promote(w)}
+                            disabled={promoteBusy}
+                            className="h-8 gap-1 rounded-lg bg-amber-500 px-2.5 text-[11px] font-extrabold text-white shadow-md shadow-amber-500/25 hover:bg-amber-500/90"
+                          >
+                            {promoteBusy ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <ArrowUpCircle className="h-3.5 w-3.5" />
+                            )}
+                            {R.promoteBtn}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFromWaitlist(w)}
+                            className="h-8 gap-1 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            title={R.waitlistRemoveBtn}
+                          >
+                            <UserX className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>

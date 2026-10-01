@@ -22,6 +22,9 @@ export async function GET(req: NextRequest) {
       fullName: u.fullName,
       phone: u.phone,
       gender: u.gender,
+      accountType: (u.accountType === "student" ? "student" : "specialist") as
+        | "student"
+        | "specialist",
       wilaya: u.wilaya || "",
       workplace: u.workplace || "",
       bio: u.bio || "",

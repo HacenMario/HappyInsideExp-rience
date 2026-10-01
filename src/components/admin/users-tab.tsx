@@ -35,6 +35,7 @@ interface AdminUser {
   fullName: string;
   phone: string;
   gender: "male" | "female";
+  accountType: "student" | "specialist";
   wilaya: string;
   workplace: string;
   avatar: string | null;
@@ -164,9 +165,30 @@ export default function UsersTab() {
                     </TableCell>
                     <TableCell className="hidden text-xs md:table-cell">{u.wilaya}</TableCell>
                     <TableCell>
-                      <Badge className={u.role === "admin" ? "bg-brand-3/20 text-brand-3" : "bg-muted text-muted-foreground"}>
-                        {u.role === "admin" ? t.admin.users.admin : t.admin.users.user}
-                      </Badge>
+                      {u.role === "admin" ? (
+                        <Badge className="bg-brand-3/20 text-brand-3">
+                          {t.admin.users.admin}
+                        </Badge>
+                      ) : (
+                        /* Account category — students show as طالب/Étudiant, others as أخصائي */
+                        <Badge
+                          variant="outline"
+                          className={
+                            u.accountType === "student"
+                              ? "gap-1 border-brand-2/40 text-[11px] text-brand-2"
+                              : "gap-1 border-brand/40 text-[11px] text-brand"
+                          }
+                        >
+                          {u.accountType === "student" ? "🎓" : "💼"}
+                          {u.accountType === "student"
+                            ? u.gender === "female"
+                              ? t.common.studentF
+                              : t.common.student
+                            : u.gender === "female"
+                              ? t.common.specialistF
+                              : t.common.specialist}
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={u.status === "active" ? "border-brand-2/50 text-brand-2" : "border-destructive/50 text-destructive"}>

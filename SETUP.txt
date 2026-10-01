@@ -1,8 +1,89 @@
 ==================================================
-Happy inside expérience — النسخة النهائية v10 / Version finale v10
+Happy inside expérience — النسخة النهائية v11 / Version finale v11
 مخيم الأخصائيين النفسيين في الجزائر — 16–19 أكتوبر 2026
 جاهز للنشر على Vercel و Railway ✈️ / Prêt pour Vercel & Railway
 ==================================================
+
+【 جديد في v11 / Nouveau dans v11 — البطاقة الرقمية + قائمة الانتظار + الشهادات 】
+✔ بطاقة المشارك الرقمية + QR Code: بعد الحجز تظهر في لوحة المشارك
+  (تبويب «تسجيلي») بطاقة أنيقة بهوية المخيم تتضمن الاسم والفئة
+  (طالب/أخصائي) ورقم حجز فريد (مثل HIEX-4K7Q2B) ورمز QR، مع زر
+  «تحميل البطاقة (PNG)». البطاقة للطلبات قيد الانتظار تحمل علامة
+  مائية «بانتظار التأكيد» وتُفعّل نهائياً بعد تأكيد الدفع.
+  ملاحظة: كل الحجوزات القديمة تحصل تلقائياً على رقم فريد عند أول
+  قراءة — لا حاجة لأي خطوة إضافية.
+✔ تسجيل الحضور (Check-in): تبويب جديد في لوحة الأدمن «الحضور
+  والشهادات» فيه ماسح QR بكاميرا الجهاز (أو إدخال الرقم يدوياً)،
+  حماية من التكرار (تنبيه «حاضر مسبقاً»)، رفض الرموز غير الصحيحة،
+  ورفض غير المؤكدين (بانتظار الدفع)، مع عدّادات حية: الحاضرون /
+  المؤكدون / الشهادات الصادرة / في قائمة الانتظار، ولوحة «آخر
+  عمليات تسجيل الحضور»، وإمكانية التراجع عن تسجيل خاطئ.
+  ملاحظة: الماسح يحتاج HTTPS (يعمل تلقائياً على النشر)؛ ويبقى
+  الإدخال اليدوي متاحاً دائماً.
+✔ قائمة الانتظار (Waitlist): عند اكتمال المقاعد يتحول زر الحجز إلى
+  «سجّل في قائمة الانتظار» فتظهر للمرشح بياناته وترتيبه في القائمة
+  ويمكنه الخروج متى شاء. في لوحة الأدمن (تبويب تسجيلات المخيم)
+  قسم «قائمة الانتظار» مرتب بالدور (الأسبق أولاً): عند إلغاء أي
+  حجز يظهر تلقائياً تنبيه «🪑 تحرر مقعد — الأول في الانتظار» وزر
+  «ترقية الآن» يحوّل المرشح إلى تسجيل قيد الانتظار (بنفس تسعير
+  فئته) ويصله إشعار تلقائي «جاء دورك — مقعدك متاح!» على الموقع
+  وفي تطبيق الأندرويد.
+✔ شهادة حضور PDF — من تقديم الأدمن فقط: في تبويب «الحضور
+  والشهادات» يصدر المدير الشهادة لكل مشارك مؤكد (زر واحد) أو
+  دفعة واحدة لكل الحاضِرين «إصدار للحاضِرين». الشهادة أنيقة A4
+  أفقية بهوية المخيم (الشعار، الاسم، الفئة، التواريخ، المكان،
+  رقم فريد HIEX-CERT-2026-XXXX مع QR للتحقق)، وتحمّل PDF من
+  صفحة مخصصة. المشارك لا يرى هذه الخاصية ولا زر تحميلها إلا بعد
+  صدورها من الإدارة وتصله إشعار «🏅 شهادتك جاهزة!». يمكن للمدير
+  إلغاء (سحب) أي شهادة أو معاينتها قبل الإرسال.
+✔ إصلاح مهم: تبويب «المستخدمون» في لوحة الأدمن كان يعرض كل
+  الحسابات بصلاحية «أخصائي» — أصبح يعرض فئة كل حساب الحقيقية:
+  «طالب/طالبة 🎓» لمن سجل كطالب و«أخصائي/أخصائية 💼» لغيره،
+  مع بقاء «مدير» للمديرين.
+✔ تحديث شامل للواجهة والترجمة: كل العناصر الجديدة مترجمة كاملة
+  عربي/فرنسي (مع RTL/LTR تلقائي) ومتجاوبة بالكامل على الهاتف
+  والحاسوب، وروبوت الدردشة يُعلم بميزة قائمة الانتظار عند
+  اكتمال المقاعد. لا حاجة لأي إعدادات أو خدمات خارجية جديدة.
+✔ Carte numérique du participant + QR : après la réservation, une
+  carte élégante aux couleurs du camp apparaît dans le tableau de
+  bord (onglet « Mon inscription ») : nom, catégorie (étudiant/
+  spécialiste), code de réservation unique (ex. HIEX-4K7Q2B) et
+  QR code, avec bouton « Télécharger la carte (PNG) ». Les demandes
+  en attente portent le filigrane « En attente » jusqu'à la
+  confirmation du paiement. Les anciennes réservations reçoivent
+  automatiquement leur code unique à la première lecture.
+✔ Check-in à l'entrée : nouvel onglet admin « Présence &
+  Certificats » avec scanner QR par caméra (ou saisie manuelle du
+  code), protection anti-doublon, refus des codes inconnus et des
+  non-confirmés, compteurs en direct (présents / confirmés /
+  certificats / liste d'attente), historique des derniers scans et
+  possibilité d'annuler un scan erroné. (Le scanner nécessite
+  HTTPS — automatique en production ; la saisie manuelle reste
+  toujours disponible.)
+✔ Liste d'attente : quand les places sont épuisées, le bouton
+  devient « Rejoindre la liste d'attente » avec position affichée
+  et départ possible à tout moment. Côté admin (onglet Inscriptions),
+  la liste est triée par ordre d'arrivée : dès qu'une réservation est
+  annulée, une alerte « place libérée — 1er en liste » apparaît et le
+  bouton « Promouvoir » crée son inscription (même tarification) avec
+  notification automatique « C'est ton tour — ta place est libérée ! »
+  sur le site et dans l'app Android.
+✔ Certificat de présence PDF — émis par l'admin UNIQUEMENT : dans
+  l'onglet « Présence & Certificats », émission individuelle ou en
+  masse pour les présents. Certificat A4 paysage aux couleurs du camp
+  (logo, nom, catégorie, dates, lieu, numéro unique HIEX-CERT-2026-
+  XXXX avec QR de vérification), téléchargeable en PDF depuis une
+  page dédiée. Le participant ne voit cette fonctionnalité qu'après
+  l'émission par l'administration (notification « 🏅 Votre certificat
+  est prêt ! »). Révocation et aperçu disponibles côté admin.
+✔ Correction importante : l'onglet « Utilisateurs » affichait
+  « Psychologue » pour tout le monde — il affiche désormais la vraie
+  catégorie de chaque compte : « طالب/طالبة 🎓 » pour les étudiants,
+  « أخصائي/أخصائية 💼 » pour les autres, « Admin » pour les admins.
+✔ Interface, traductions (AR/FR avec RTL/LTR automatique) et
+  responsive entièrement mis à jour ; le chatbot mentionne la liste
+  d'attente quand le camp est complet. Aucun réglage ni service
+  externe supplémentaire requis.
 
 【 جديد في v10 / Nouveau dans v10 — التسجيل بالولايات الـ69 + التسعير المزدوج 】
 ✔ قائمة الولايات الرسمية (69 ولاية): كل حقول الولاية في الموقع أصبحت

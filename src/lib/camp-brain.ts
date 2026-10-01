@@ -396,12 +396,18 @@ function render(intent: string, s: CampSnapshot, lang: "ar" | "fr"): string {
       ? `لأي استفسار آخر: واتساب ${wa} 💬`
       : `Pour toute autre question : WhatsApp ${wa} 💬`
     : "";
+  const waitlistLine =
+    s.seatsLeft <= 0
+      ? lang === "ar"
+        ? "\n⏳ المقاعد مكتملة — يمكنك الانضمام إلى قائمة الانتظار من لوحة تحكمك وستُبلّغ فور تحرر أي مقعد."
+        : "\n⏳ Complet — tu peux rejoindre la liste d'attente depuis ton tableau de bord et tu seras notifié(e) dès qu'une place se libère."
+      : "";
 
   switch (intent) {
     case "seats":
       return lang === "ar"
-        ? `🌿 ${openLine}\n${seatsLine}\nالمقاعد محدودة والحجز بالأسبقية — سارع بالتسجيل من صفحة «التسجيل في المخيم»! 🎯`
-        : `🌿 ${openLine}\n${seatsLine}\nLes places sont limitées, premier arrivé premier servi — dépêchez-vous depuis la page d'inscription ! 🎯`;
+        ? `🌿 ${openLine}\n${seatsLine}${waitlistLine}\nالمقاعد محدودة والحجز بالأسبقية — سارع بالتسجيل من صفحة «التسجيل في المخيم»! 🎯`
+        : `🌿 ${openLine}\n${seatsLine}${waitlistLine}\nLes places sont limitées, premier arrivé premier servi — dépêchez-vous depuis la page d'inscription ! 🎯`;
 
     case "dates":
       return lang === "ar"
@@ -498,7 +504,9 @@ function bestFaq(userText: string, s: CampSnapshot, lang: "ar" | "fr"): string |
   if (uTokens.size === 0) return null;
   let best: { score: number; idx: number } | null = null;
 
-  s.faqs.forEach((f, idx) => {
+  for (let idx = 0; idx < s.faqs.length; idx++) {
+    const f = s.faqs[idx];
+    if (!f) continue;
     for (const q of [lang === "ar" ? f.questionAr : f.questionFr, lang === "ar" ? f.questionFr : f.questionAr]) {
       if (!q) continue;
       const qNorm = normText(q);
@@ -506,7 +514,7 @@ function bestFaq(userText: string, s: CampSnapshot, lang: "ar" | "fr"): string |
       // containment = instant match
       if (u.includes(qNorm) || qNorm.includes(u)) {
         best = { score: 2, idx };
-        return;
+        break;
       }
       const qTokens = contentTokens(q);
       if (!qTokens.length) continue;
@@ -514,7 +522,7 @@ function bestFaq(userText: string, s: CampSnapshot, lang: "ar" | "fr"): string |
       const score = inter / Math.sqrt(qTokens.length * uTokens.size);
       if (!best || score > best.score) best = { score, idx };
     }
-  });
+  }
 
   if (best && best.score >= 0.4) {
     const f = s.faqs[best.idx];
