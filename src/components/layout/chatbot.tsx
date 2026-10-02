@@ -6,7 +6,7 @@ import { LogoMark } from "@/components/shared/logo";
 import FloatingBubble from "@/components/layout/floating-bubble";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { X, Send, Bot, Sparkles } from "lucide-react";
+import { X, Send, Bot, Sparkles, LayoutGrid } from "lucide-react";
 
 interface Msg {
   role: "user" | "assistant";
@@ -47,7 +47,7 @@ export default function Chatbot() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: next.filter((m) => m.content).slice(-10),
+          messages: next.filter((m) => m.content).slice(-12),
         }),
       });
       const data = await res.json();
@@ -63,6 +63,8 @@ export default function Chatbot() {
       inputRef.current?.focus();
     }
   };
+
+  const askTopics = () => send(lang === "ar" ? "ما المواضيع التي تساعدني فيها؟" : "Quels sujets peux-tu traiter ?");
 
   return (
     <>
@@ -115,9 +117,9 @@ export default function Chatbot() {
         </div>
 
         {/* Messages */}
-        <div ref={scrollRef} className="scroll-area flex-1 space-y-3 overflow-y-auto bg-muted/40 p-4">
+        <div ref={scrollRef} role="log" aria-live="polite" className="scroll-area flex-1 space-y-3 overflow-y-auto bg-muted/40 p-4">
           {messages.map((m, i) => (
-            <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
+            <div key={i} className={cn("bubble-in flex", m.role === "user" ? "justify-end" : "justify-start")}>
               <div
                 className={cn(
                   "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-sm",
@@ -143,13 +145,13 @@ export default function Chatbot() {
               </div>
             </div>
           ) : null}
-          {messages.length <= 1 ? (
+          {messages.length <= 6 ? (
             <div className="flex flex-wrap gap-2 pt-2">
               {t.bot.quick.map((q) => (
                 <button
                   key={q}
                   onClick={() => send(q)}
-                  className="rounded-full border border-brand/40 bg-brand/5 px-3 py-1.5 text-xs font-semibold text-brand transition-all hover:bg-brand hover:text-white"
+                  className="quick-chip rounded-full border border-brand/40 bg-brand/5 px-3 py-1.5 text-xs font-semibold text-brand transition-all hover:bg-brand hover:text-white"
                 >
                   {q}
                 </button>
@@ -175,6 +177,16 @@ export default function Chatbot() {
               className="h-10 flex-1 rounded-full border border-input bg-background px-4 text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/30"
               maxLength={500}
             />
+            <button
+              type="button"
+              onClick={askTopics}
+              disabled={typing}
+              title={t.bot.topicsTitle}
+              aria-label={t.bot.topicsTitle}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-brand/40 bg-brand/5 text-brand transition-all hover:bg-brand hover:text-white disabled:opacity-50"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
             <Button
               type="submit"
               size="icon"

@@ -527,3 +527,98 @@
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* ============================================================
+   TASK 18 — LIVE ACTIVITY POPUPS · STORY CARD · CHAT EFFECTS
+   (additive layer — nothing above was modified)
+   ============================================================ */
+
+/* ---- Live activity popup (bottom-center social proof) ---- */
+.activity-popup {
+  animation: popup-in 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+.activity-popup-out {
+  animation: popup-out 0.3s ease both;
+}
+@keyframes popup-in {
+  0% { opacity: 0; transform: translate(-50%, 20px) scale(0.94); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@keyframes popup-out {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, 16px) scale(0.95); }
+}
+.activity-popup-card {
+  box-shadow:
+    0 10px 30px -10px color-mix(in oklab, var(--brand) 30%, transparent),
+    0 24px 60px -20px oklch(0.2 0.03 165 / 0.35);
+}
+.activity-cta {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease;
+}
+.activity-popup-card:hover .activity-cta {
+  transform: scale(1.06);
+}
+/* thin 10s auto-close bar (duration matches AUTO_CLOSE_MS) */
+.activity-timer {
+  transform-origin: left center;
+  animation: popup-timer 10s linear forwards;
+}
+@keyframes popup-timer {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* ---- Chatbot polish ---- */
+.bubble-in {
+  animation: bubble-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes bubble-in {
+  0% { opacity: 0; transform: translateY(9px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.quick-chip {
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+.quick-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px -8px color-mix(in oklab, var(--brand) 55%, transparent);
+}
+
+/* ---- Story card buttons: premium sheen sweep ---- */
+.story-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.story-btn::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: 1;
+  pointer-events: none;
+  transform: translateX(-130%) skewX(-12deg);
+  background: linear-gradient(100deg, transparent 32%, rgba(255, 255, 255, 0.4) 50%, transparent 68%);
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.story-btn:hover::after {
+  transform: translateX(130%) skewX(-12deg);
+}
+[dir="rtl"] .story-btn::after {
+  transform: translateX(130%) skewX(12deg);
+}
+[dir="rtl"] .story-btn:hover::after {
+  transform: translateX(-130%) skewX(12deg);
+}
+
+/* ---- Story dialog preview: soft cinematic frame ---- */
+.story-preview-frame {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in oklab, var(--brand) 12%, transparent), transparent 70%),
+    color-mix(in oklab, var(--muted) 55%, transparent);
+}

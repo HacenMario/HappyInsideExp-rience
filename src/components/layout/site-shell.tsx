@@ -8,6 +8,7 @@ import Footer from "@/components/layout/footer";
 import AnnouncementBar from "@/components/layout/announcement-bar";
 import WhatsAppButton from "@/components/layout/whatsapp-button";
 import Chatbot from "@/components/layout/chatbot";
+import ActivityFeed from "@/components/layout/activity-feed";
 import { PushFloatingPrompt } from "@/components/layout/push-opt-in";
 import { LogoSkeleton } from "@/components/shared/logo";
 import { CampInfoProvider } from "@/components/shared/camp-info";
@@ -30,6 +31,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
         <Footer />
         <WhatsAppButton />
         <Chatbot />
+        <ActivityFeed />
         <PushFloatingPrompt />
       </div>
     </CampInfoProvider>

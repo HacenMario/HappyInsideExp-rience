@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useLang } from "@/lib/i18n/context";
 import { useCampInfo } from "@/components/shared/camp-info";
 import { Button } from "@/components/ui/button";
+import StoryCardButton from "@/components/shared/story-card";
 import { toast } from "@/hooks/use-toast";
 import { Download, Loader2, IdCard } from "lucide-react";
 
@@ -364,7 +365,15 @@ export default function ParticipantCard({
           {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
           {t.dash.cardDownload}
         </Button>
-        <span className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+        {/* Shareable Instagram story card (9:16) — Task 18 */}
+        <StoryCardButton
+          fullName={fullName}
+          accountType={accountType}
+          gender={gender}
+          code={code}
+          status={status}
+        />
+        <span className="flex w-full items-center justify-center gap-1.5 text-[11px] font-bold text-muted-foreground sm:w-auto">
           <IdCard className="h-3.5 w-3.5" />
           {status === "pending" ? t.dash.cardPendingNote : t.dash.cardPresentNote}
         </span>

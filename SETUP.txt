@@ -1,8 +1,68 @@
 ==================================================
-Happy inside expérience — النسخة النهائية v12 / Version finale v12
+Happy inside expérience — النسخة النهائية v13 / Version finale v13
 مخيم الأخصائيين النفسيين في الجزائر — 16–19 أكتوبر 2026
 جاهز للنشر على Vercel و Railway ✈️ / Prêt pour Vercel & Railway
 ==================================================
+
+【 جديد في v13 / Nouveau dans v13 — محرك التسجيل الذكي 】
+✔ بث النشاط المباشر (جديد): إشعارات Popup أنيقة تظهر أسفل منتصف
+  الشاشة كل فترة مناسبة (أول ظهور بعد ~8 ثوانٍ ثم كل 28–55 ثانية)
+  تعرض آخر المسجلين بخصوصية كاملة (الاسم الأول + الحرف الأول
+  «سارة ب.» + الولاية + الفئة) مع النقطة الخضراء النابضة «مباشر»،
+  وإغلاق تلقائي بعد 10 ثوانٍ بشريط توقيت رفيع. آداب احترافية
+  كاملة: 6 إشعارات كحد أقصى للجلسة، توقف تلقائي عندما تكون
+  النافذة مخفية، لا تظهر في لوحة الأدمن، والضغط اليدوي على ✕
+  يؤجل الظهور التالي لمدة أطول — لا إزعاج مطلقاً. الضغط على
+  البطاقة يفتح صفحة التسجيل مباشرة. تعمل بالعربية والفرنسية مع
+  ترجمة أسماء الولايات.
+✔ بطاقة الستوري القابلة للمشاركة (جديد): زر «بطاقة ستوري» بجانب
+  بطاقة المشارك يفتح معاينة حية بمقاس 9:16 (1080×1920) جاهزة
+  لإنستغرام وواتساب: شعار المخيم، «أنا سأكون هناك»، الاسم الأول،
+  شارة الفئة، شارة ذهبية «المشارك رقم N»، التواريخ والمكان، ورمز
+  QR يفتح الموقع للمسح. تحميل PNG بأبعاد مضبوطة 1080×1920، وزر
+  «مشاركة» يستخدم ورقة المشاركة الأصلية للهاتف عند توفرها.
+  خصوصيتك محفوظة: الاسم الأول ورقم المشاركة فقط.
+✔ الشات بوت الأذكى (ترقية كبرى): أُضيفت 9 مواضيع جديدة تجيب عنها
+  المحرك المحلي فوراً: طريقة الدفع 💳، الإقامة والمبيت 🏠، النقل
+  والوصول 🚌، الوجبات 🍽️، ماذا أحضر 🎒، شهادة الحضور 🏅، قائمة
+  الانتظار ⏳، بطاقة المشارك 🪪، إلغاء الحجز ↩️ — مع مطابقة
+  متسامحة مع الأخطاء الإملائية والصيغ المشتقة (نتسجبل، شهادتي)
+  ولهجات جزائرية (كيفاش، شحال، كيما) وأذكى إجابات موحدة السعر
+  عند السؤال «شحال التسجيل»، وزر «المواضيع» الجديد داخل المحادثة
+  يعرض كل ما يجيب عنه المساعد، وأزرار سريعة موسّعة (8 مواضيع)
+  وتحية أغنى + حركة دخول أنيقة للرسائل.
+✔ CSS احترافي جديد (طبقة إضافية دون المساس بلا شيء): انزلاق
+  النشاط المباشر، لمعان الأزرار الفاخر (story-btn sheen بحساب
+  RTL)، حركة رسائل المحادثة، رفع أزرار الأسئلة السريعة، إطار
+  سينمائي لمعاينة الستوري — مع احترام كامل لميزة تقليل الحركة.
+✔ تجاوب كامل: البطاقة والبث والحوار والمحادثة على الهاتف
+  (390 بكسل) والحاسوب، بالعربية RTL والفرنسية LTR.
+✔ Flux d'activité en direct (nouveau) : popups élégantes en bas
+  au centre, espacées (~8 s au premier affichage, puis 28–55 s),
+  dernières inscriptions avec confidentialité (prénom + initiale
+  «Sara B.», wilaya traduite, catégorie), pastille verte «live»,
+  fermeture auto après 10 s avec fine barre de temps. Étiquette
+  maximale : 6 par session, pause si l'onglet est masqué, jamais
+  sur /admin, fermeture manuelle = pause plus longue. Un clic
+  ouvre la page d'inscription. AR + FR.
+✔ Carte story partageable (nouveau) : bouton « Carte story » à
+  côté de la carte participant — aperçu 9:16 (1080×1920) prêt
+  pour Instagram/WhatsApp : logo, «Je serai là», prénom, badge
+  catégorie, badge doré «Participant n° N», dates + lieu, QR du
+  site. Téléchargement PNG aux dimensions exactes, bouton
+  « Partager » (feuille de partage native quand disponible).
+  Vie privée : prénom + numéro seulement.
+✔ Chatbot bien plus intelligent (grosse mise à jour) : 9 nouveaux
+  thèmes répondus localement (paiement, hébergement, transport,
+  repas, quoi apporter, certificat, liste d'attente, carte
+  participant, annulation), tolérance aux fautes de frappe et
+  aux dérivés (نتسجبل، شهادتي), dialecte algérien (كيفاش، شحال),
+  bouton « Sujets » dans le chat, 8 puces rapides enrichies,
+  accueil plus complet, animation d'entrée des messages.
+✔ CSS premium (couche additive, rien modifié) : slide-in du flux
+  live, balayage lumineux des boutons (RTL-aware), apparition des
+  bulles de chat, hover des puces, cadre cinématique de la
+  préview story — respect de prefers-reduced-motion.
 
 【 جديد في v12 / Nouveau dans v12 — إصلاح الشهادة + إصلاح الماسح 】
 ✔ إصلاح شهادة الحضور (الأهم): كانت الشهادة تظهر مشوّهة ومزاحمة في

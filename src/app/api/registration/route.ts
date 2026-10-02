@@ -24,6 +24,16 @@ export async function GET() {
     });
     if (reg) await ensureBookingCode(reg);
 
+    // chronological seat number (rank among active registrations) — used by
+    // the shareable story card ("المشارك رقم N")
+    let seatNumber: number | null = null;
+    if (reg?.createdAt) {
+      seatNumber = (await c.registrations.countDocuments({
+        status: { $in: ["pending", "confirmed"] },
+        createdAt: { $lte: reg.createdAt },
+      })) || 1;
+    }
+
     // Waiting-list state for users without an active registration
     let waitlist: {
       position: number;
@@ -58,6 +68,7 @@ export async function GET() {
             _id: reg._id!.toString(),
             code: reg.code,
             attended: !!reg.attended,
+            seatNumber,
             certificate: reg.certificate?.issued
               ? { issued: true, number: reg.certificate.number, issuedAt: reg.certificate.issuedAt }
               : null,

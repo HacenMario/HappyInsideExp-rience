@@ -209,8 +209,9 @@ const INTENTS: Intent[] = [
     id: "fee",
     phrases: [
       "كم السعر","كم ثمن","كم تكلفه","بكم المخيم","شحال السعر","شحال التسجيل","سعر التسجيل",
-      "ثمن التسجيل","سعر المخيم","combien ca coute","combien coute","quel est le prix",
-      "quel prix","prix du camp","prix d inscription","how much does it cost","how much is it",
+      "ثمن التسجيل","سعر المخيم","السعر يشمل","ماذا يشمل السعر","ماذا تشمل الرسوم","الرسوم تشمل",
+      "combien ca coute","combien coute","quel est le prix","que comprend le prix",
+      "que comprend le tarif","quel prix","prix du camp","prix d inscription","how much does it cost","how much is it",
     ],
     tokens: ["سعر","اسعار","ثمن","تكلفه","بكام","دينار","دج","مجاني","gratuit","gratuite","prix","tarif","cout","coute","payant","fee","cost","price"],
   },
@@ -272,6 +273,79 @@ const INTENTS: Intent[] = [
     weak: ["رقم"],
   },
   {
+    id: "payment",
+    phrases: [
+      "طريقة الدفع","طريقه الدفع","كيف ادفع","كيفية الدفع","كيفيه الدفع","متى ادفع","وين ادفع","كيفاش ندفع",
+      "الدفع","ادفع وين","تحويل بريدي","حساب بريدي","بريدي موبايل","كارت الذهبية",
+      "mode de paiement","comment payer","ou payer","paiement","payement","versement","baridi mob","effectuer le paiement",
+    ],
+    tokens: ["دفع","ادفع","ندفع","دفعات","تسديد","تحويل","بريدي","ccp","baridi","paiement","payer","versement","payment","pay"],
+  },
+  {
+    id: "accommodation",
+    phrases: [
+      "مكان الاقامه","الاقامة","الاقامه","المبيت","مكان النوم","الغرف","غرف النوم","سكن","فندق","المبيت والاقامه",
+      "hebergement","logement","dormir","ou dormir","on dort","chambre","hotel","nuitee","coucher","on couche",
+    ],
+    tokens: ["اقامه","مبيت","نوم","سكن","غرف","فندق","ليل","hebergement","logement","dormir","chambre","hotel","nuit"],
+  },
+  {
+    id: "transport",
+    phrases: [
+      "النقل","المواصلات","وسيلة النقل","وسيله النقل","كيف اصل","طريقة الوصول","طريقه الوصول","الوصول الى المخيم","نقليات","هل يوجد نقل","كيف نصل",
+      "transport","comment arriver","comment y aller","comment on arrive","acces au camp","navette","trajet","en voiture",
+    ],
+    tokens: ["نقل","مواصلات","وصول","نقليات","سياره","حافله","transport","arriver","acces","navette","trajet","bus"],
+  },
+  {
+    id: "food",
+    phrases: [
+      "الوجبات","الطعام","الاكل","الأكل","ماذا ناكل","الفطور","فطور","الغداء","غداء","العشاء","عشاء","المشروبات","قهوة","هناك اكل",
+      "repas","nourriture","manger","on mange","petit dejeuner","dejeuner","diner","boissons","cafe","la bouffe",
+    ],
+    tokens: ["طعام","اكل","وجبات","فطور","غداء","عشاء","قهوه","مشروب","مطعم","repas","manger","dejeuner","diner","boisson","cafe","nourriture"],
+  },
+  {
+    id: "bring",
+    phrases: [
+      "ماذا احضر","ماذا اجلب","ماذا احضر معي","ما هي الاشياء المطلوبة","الاغراض","الملابس","متطلبات المخيم","اشياء احضر",
+      "qu apporter","quoi apporter","que faut il apporter","qu est ce que j apporte","valise","apporter avec moi","affaires a prevoir",
+    ],
+    tokens: ["احضر","اجلب","اغراض","ملابس","حقيبه","متطلبات","apporter","valise","affaires","prevoir"],
+  },
+  {
+    id: "certificate",
+    phrases: [
+      "شهادة حضور","شهاده حضور","شهادة مشاركة","هل هناك شهادة","هل توجد شهادة","هل يعطون شهادة","الشهادات","شهادة في النهاية",
+      "certificat de presence","attestation de presence","certificat","attestation","un certificat","certificat de participation",
+    ],
+    tokens: ["شهاده","شهادات","certificat","attestation"],
+  },
+  {
+    id: "waitlist",
+    phrases: [
+      "قائمة الانتظار","قائمه الانتظار","قائمة الانتظار","لائحة الانتظار","الانتظار","هل المخيم ممتلئ","اكتملت المقاعد","لا يوجد مقاعد","المقاعد ممتلئة","المقاعد مكتملة","قائمة احتياطية","ماذا لو امتلأ",
+      "liste d attente","liste attente","liste complementaire","camp complet","complet","plus de places","etre sur liste","liste en attente",
+    ],
+    tokens: ["انتظار","احتياطي","امتلاء","مكتمل","اتظار","attente","complet","reserve"],
+  },
+  {
+    id: "card",
+    phrases: [
+      "بطاقة المشارك","بطاقه المشارك","البطاقة الرقمية","البطاقه الرقمية","بطاقتي","بطاقة تعريف","رمز qr","كود qr","رمز الحجز","رقم الحجز","كود الحجز","كودك",
+      "carte du participant","carte numerique","ma carte","code qr","code de reservation","numero de reservation","badge",
+    ],
+    tokens: ["بطاقه","بطاقتي","qr","كود","carte","badge"],
+  },
+  {
+    id: "cancel",
+    phrases: [
+      "الغاء الحجز","إلغاء الحجز","الغاء التسجيل","كيف الغاء حجزي","الغاء مشاركتي","استرجاع المال","استرجاع الرسوم","ارجاع النقود",
+      "annuler mon inscription","annulation","remboursement","se desinscrire","annuler la reservation","je veux annuler",
+    ],
+    tokens: ["غاء","الغاء","استرجاع","ارجاع","annuler","annulation","remboursement","desinscrire"],
+  },
+  {
     id: "announcements",
     phrases: [
       "اي اعلانات","اخر الاخبار","ما الجديد","اخبار المخيم","اي جديد","dernieres annonces",
@@ -283,9 +357,11 @@ const INTENTS: Intent[] = [
     id: "botself",
     phrases: [
       "من انت","وش انت","شنو انت","ماذا تستطيع","كيف تعمل","شنو تقدر","تقدر تساعدني",
+      "ما المواضيع","المواضيع التي تساعدني","بماذا تساعد","كيف تساعدني","اشرح ما تقدمه",
       "t es qui","tu es qui","qui es tu","tu sais faire quoi","what can you do","who are you",
+      "quels sujets","montre les sujets","en quoi peux tu aider","comment peux tu aider",
     ],
-    tokens: ["robot"],
+    tokens: ["robot","مواضيع","sujets"],
     weak: ["مساعد","bot","aide","مساعده"],
   },
   {
@@ -302,11 +378,47 @@ const INTENTS: Intent[] = [
 
 const SMALLTALK = new Set(["greeting", "thanks", "botself"]);
 
+/* Tolerant token matching: exact, morphological prefix (تسجيلي→تسجيل),
+   shared root prefix (شهادتي↔شهاده) and 1-edit typos (تسجبل→تسجيل). */
+function commonPrefixLen(a: string, b: string): number {
+  let i = 0;
+  const max = Math.min(a.length, b.length);
+  while (i < max && a[i] === b[i]) i++;
+  return i;
+}
+
+function levWithin1(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1) return false;
+  // ensure a is the shorter
+  if (a.length > b.length) [a, b] = [b, a];
+  let i = 0, j = 0, edits = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { i++; j++; continue; }
+    if (++edits > 1) return false;
+    if (a.length === b.length) { i++; j++; } else { j++; }
+  }
+  return true;
+}
+
+function tokenMatches(userTokens: Iterable<string>, token: string): boolean {
+  const min = token.length >= 3 ? 3 : token.length;
+  for (const ut of userTokens) {
+    if (ut === token) return true;
+    if (ut.length >= min && token.length >= min) {
+      if (ut.startsWith(token) || token.startsWith(ut)) return true;
+      if (ut.length >= 4 && token.length >= 4 && commonPrefixLen(ut, token) >= 4) return true;
+      if (ut.length >= 4 && token.length >= 4 && levWithin1(ut, token)) return true;
+    }
+  }
+  return false;
+}
+
 function scoreIntent(text: string, textTokens: Set<string>, intent: Intent): number {
   let score = 0;
   for (const p of intent.phrases) if (text.includes(p)) score += 3;
-  for (const t of intent.tokens) if (textTokens.has(t)) score += 2;
-  for (const t of intent.weak ?? []) if (textTokens.has(t)) score += 1;
+  for (const t of intent.tokens) if (tokenMatches(textTokens, t)) score += 2;
+  for (const t of intent.weak ?? []) if (tokenMatches(textTokens, t)) score += 1;
   return score;
 }
 
@@ -373,8 +485,8 @@ const PROGRAM_PILLARS: Record<"ar" | "fr", string[]> = {
 
 export function topicsList(lang: "ar" | "fr"): string {
   return lang === "ar"
-    ? "• عدد المقاعد المتاحة\n• التواريخ والمدة\n• مكان الإقامة\n• سعر التسجيل\n• طريقة التسجيل\n• برنامج المخيم وأنشطته\n• المتحدثون\n• آخر الإعلانات\n• التواصل مع الفريق"
-    : "• Le nombre de places disponibles\n• Les dates et la durée\n• Le lieu du camp\n• Le tarif d'inscription\n• Comment s'inscrire\n• Le programme et les activités\n• Les intervenants\n• Les dernières annonces\n• Contacter l'équipe";
+    ? "• عدد المقاعد المتاحة\n• التواريخ والمدة\n• المكان والإقامة والنقل\n• سعر التسجيل وطريقة الدفع\n• طريقة التسجيل\n• برنامج المخيم وأنشطته\n• المتحدثون\n• شهادة الحضور\n• بطاقة المشارك و QR\n• قائمة الانتظار\n• آخر الإعلانات\n• التواصل مع الفريق"
+    : "• Le nombre de places disponibles\n• Les dates et la durée\n• Le lieu, l'hébergement et le transport\n• Le tarif et le mode de paiement\n• Comment s'inscrire\n• Le programme et les activités\n• Les intervenants\n• Le certificat de présence\n• La carte du participant et le QR\n• La liste d'attente\n• Les dernières annonces\n• Contacter l'équipe";
 }
 
 function render(intent: string, s: CampSnapshot, lang: "ar" | "fr"): string {
@@ -443,6 +555,51 @@ function render(intent: string, s: CampSnapshot, lang: "ar" | "fr"): string {
         ? `${openLine}\n${seatsLine}\n${s.registrationOpen ? "سارع بالحجز من صفحة «التسجيل في المخيم» 🚀" : "تابع الإعلانات لمعرفة موعد فتح التسجيل 🔔"}`
         : `${openLine}\n${seatsLine}\n${s.registrationOpen ? "Réservez depuis la page d'inscription 🚀" : "Suivez les annonces pour la réouverture 🔔"}`;
 
+    case "payment":
+      return lang === "ar"
+        ? `💳 طريقة الدفع: بعد حجز مقعدك مباشرة، ترسل لك الإدارة تفاصيل الدفع عبر واتساب أو الهاتف.\nبعد تأكيد الدفع يتفعّل حجزك نهائياً وتصلك إشعارات المخيم ✅\n${s.fee > 0 || s.studentFee > 0 ? `💰 الرسوم: الأخصائيون ${fmtMoney(s.fee, "ar")} / الطلبة ${fmtMoney(s.studentFee, "ar")}.\n` : ""}${openLine}\n${seatsLine}${waLine ? `\n${waLine}` : ""}`
+        : `💳 Mode de paiement : dès la réservation de ta place, l'équipe t'envoie les détails du paiement via WhatsApp ou par téléphone.\nAprès confirmation du paiement, ta place est activée et tu reçois les notifications du camp ✅\n${s.fee > 0 || s.studentFee > 0 ? `💰 Tarifs : spécialistes ${fmtMoney(s.fee, "fr")} / étudiants ${fmtMoney(s.studentFee, "fr")}.\n` : ""}${openLine}\n${seatsLine}${waLine ? `\n${waLine}` : ""}`;
+
+    case "accommodation":
+      return lang === "ar"
+        ? `🏠 الإقامة في قلب أجواء المخيم: ${s.locationAr}.\nالتفاصيل الكاملة (المبيت، الغرف، اللوازم) تُرسل حصراً للمسجلين قبل الانطلاق مباشرة 📩\n${waLine}`
+        : `🏠 L'hébergement est au cœur de l'ambiance du camp : ${s.locationFr}.\nTous les détails (logement, chambres, affaires à prévoir) sont envoyés exclusivement aux inscrits juste avant le départ 📩\n${waLine}`;
+
+    case "transport":
+      return lang === "ar"
+        ? `🚌 تفاصيل الوصول إلى ${s.locationAr} (الاتجاهات، أوقات الاستقبال، خيارات النقل) تُرسل للمسجلين قبل الانطلاق مباشرة.\n${waLine}`
+        : `🚌 Les détails d'accès à ${s.locationFr} (itinéraires, horaires d'accueil, options de transport) sont envoyés aux inscrits juste avant le départ.\n${waLine}`;
+
+    case "food":
+      return lang === "ar"
+        ? `🍽️ الوجبات والاستراحات جزء من دفء أجواء المخيم — تُرسل تفاصيلها الكاملة للمسجلين قبل الانطلاق.\n${waLine}`
+        : `🍽️ Les repas et les pauses font partie de la chaleur du camp — tous les détails sont envoyés aux inscrits avant le départ.\n${waLine}`;
+
+    case "bring":
+      return lang === "ar"
+        ? `🎒 قبل الانطلاق مباشرة ستصلك قائمة الأغراض الموصى بها عبر الإشعارات والواتساب (ملابس مريحة، دفتر ومحرر، وروح مرحة 😄).\n${waLine}`
+        : `🎒 Juste avant le départ, tu recevras la liste des affaires recommandées via les notifications et WhatsApp (vêtements confortables, carnet et stylo, et une belle humeur 😄).\n${waLine}`;
+
+    case "certificate":
+      return lang === "ar"
+        ? `🏅 نعم! كل مشارك حاضر يحصل على شهادة حضور رسمية باسمه ورقم فريد قابل للتحقق.\nتُصدر من الإدارة بعد المخيم وتُحمّل PDF مباشرة من لوحة تحكمك ✨\n${seatsLine}`
+        : `🏅 Oui ! Chaque participant présent reçoit un certificat de présence officiel à son nom, avec un numéro unique vérifiable.\nIl est émis par l'équipe après le camp et téléchargeable en PDF depuis ton tableau de bord ✨\n${seatsLine}`;
+
+    case "waitlist":
+      return lang === "ar"
+        ? `⏳ ${seatsLine}\nإذا اكتملت المقاعد: من لوحة تحكمك اضغط «التسجيل في قائمة الانتظار» — الترتيب حسب أسبقية الانضمام، وعند تحرر أي مقعد يصلك إشعار فوري وتنتقل تلقائياً إلى قائمة الحجز ✅\n${openLine}`
+        : `⏳ ${seatsLine}\nSi les places sont complètes : depuis ton tableau de bord, clique sur « Rejoindre la liste d'attente » — l'ordre est celui des inscriptions, et dès qu'une place se libère tu reçois une notification et tu passes automatiquement en liste principale ✅\n${openLine}`;
+
+    case "card":
+      return lang === "ar"
+        ? `🪪 بعد حجز مقعدك تحصل فوراً على بطاقة مشارك رقمية تحمل اسمك ورمز QR خاص بك.\nاعرضها عند مدخل المخيم لتسجيل حضورك في ثوانٍ، ويمكنك تحميلها PNG من لوحة تحكمك.\n${seatsLine}`
+        : `🪪 Dès la réservation de ta place, tu obtiens une carte de participant numérique avec ton nom et ton QR code personnel.\nPrésente-la à l'entrée du camp pour valider ta présence en quelques secondes — téléchargeable en PNG depuis ton tableau de bord.\n${seatsLine}`;
+
+    case "cancel":
+      return lang === "ar"
+        ? `↩️ يمكنك إلغاء حجزك في أي وقت من لوحة تحكمك (زر «إلغاء الحجز») ويعود مقعدك تلقائياً للمتاحين.\nللاستفسار عن استرجاع الرسوم: ${wa ? `واتساب ${wa} 💬` : "صفحة «اتصل بنا» 💬"}`
+        : `↩️ Tu peux annuler ta réservation à tout moment depuis ton tableau de bord (bouton « Annuler ») — ta place redevient automatiquement disponible.\nPour toute question sur le remboursement : ${wa ? `WhatsApp ${wa} 💬` : "la page « Contact » 💬"}`;
+
     case "program":
       return lang === "ar"
         ? `🎯 برنامج المخيم — 7 محاور:\n${PROGRAM_PILLARS.ar.join("\n")}\nالصور التفصيلية للبرنامج متوفرة في الصفحة الرئيسية (اضغط على الصورة للتكبير 🔍)`
@@ -481,6 +638,11 @@ function render(intent: string, s: CampSnapshot, lang: "ar" | "fr"): string {
         ? `🤖 أنا «مساعد Happy Inside» — أجيب مباشرة من معلومات موقع المخيم الحية (بدون أي مصادر خارجية).\nيمكنك سؤالي عن:\n${topicsList("ar")}`
         : `🤖 Je suis « l'Assistant Happy Inside » — je réponds directement depuis les informations en direct du site du camp (aucune source externe).\nVous pouvez me demander :\n${topicsList("fr")}`;
 
+    case "help":
+      return lang === "ar"
+        ? `🌱 بكل سرور! هذه كل المواضيع التي أساعدك فيها:\n${topicsList("ar")}\nاسألني بأي صيغة تناسبك 😊`
+        : `🌱 Avec plaisir ! Voici tous les sujets sur lesquels je peux t'aider :\n${topicsList("fr")}\nPose ta question comme tu veux 😊`;
+
     case "greeting":
       return lang === "ar"
         ? `🌿 أهلاً بك! أنا مساعد مخيم «${s.name}».\nاسألني عن المقاعد، التواريخ، السعر، البرنامج، المتحدثين أو التسجيل — وأجاوبك فوراً! 😊`
@@ -518,13 +680,15 @@ function bestFaq(userText: string, s: CampSnapshot, lang: "ar" | "fr"): string |
       }
       const qTokens = contentTokens(q);
       if (!qTokens.length) continue;
-      const inter = qTokens.filter((t) => uTokens.has(t)).length;
+      // fuzzy token intersection (morphology + typo tolerant)
+      let inter = 0;
+      for (const qt of qTokens) if (tokenMatches(uTokens, qt)) inter++;
       const score = inter / Math.sqrt(qTokens.length * uTokens.size);
       if (!best || score > best.score) best = { score, idx };
     }
   }
 
-  if (best && best.score >= 0.4) {
+  if (best && best.score >= 0.34) {
     const f = s.faqs[best.idx];
     if (!f) return null;
     const answer = lang === "ar" ? f.answerAr || f.answerFr : f.answerFr || f.answerAr;
@@ -561,6 +725,20 @@ export function answerLocally(
   }
 
   if (bestIntent) {
+    // "how much …register…" → the fee answer already includes the price
+    // breakdown + seats, which is what the user actually wants
+    if (
+      bestIntent.id === "register" &&
+      /(شحال|بكام|كم |سعر|ثمن|تكلف|prix|tarif|coute|combien|price|cost)/i.test(text)
+    ) {
+      const feeReply = render("fee", s, lang);
+      if (feeReply) return { reply: feeReply, intent: "fee" };
+    }
+    // "botself" splits into two answers: identity vs. topics overview
+    if (bestIntent.id === "botself" && /(مواضيع|sujets|topics)/.test(text)) {
+      const helpReply = render("help", s, lang);
+      if (helpReply) return { reply: helpReply, intent: "help" };
+    }
     const reply = render(bestIntent.id, s, lang);
     if (reply) return { reply, intent: bestIntent.id };
   }
