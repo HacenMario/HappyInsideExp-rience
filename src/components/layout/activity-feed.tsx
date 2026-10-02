@@ -70,10 +70,14 @@ export default function ActivityFeed() {
     isAdminRef.current = pathname?.startsWith("/admin") ?? false;
   }, [pathname]);
 
-  /* fetch the live registrations (and refresh every minute) */
+  /* fetch the live registrations (and refresh every 2 minutes).
+   * Task 19 (connection guard): 60s → 120s polling, the endpoint is
+   * edge-cached (s-maxage) so most polls never reach MongoDB, and
+   * background tabs stop polling entirely while hidden. */
   useEffect(() => {
     let alive = true;
     const load = async () => {
+      if (document.hidden) return; // don't fetch from hidden tabs
       try {
         const res = await fetch("/api/activity/recent", { cache: "no-store" });
         const data = await res.json();
@@ -81,7 +85,7 @@ export default function ActivityFeed() {
       } catch {}
     };
     load();
-    pollRef.current = setInterval(load, 60_000);
+    pollRef.current = setInterval(load, 120_000);
     return () => {
       alive = false;
       if (pollRef.current) clearInterval(pollRef.current);

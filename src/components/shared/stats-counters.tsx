@@ -77,7 +77,7 @@ export default function StatsCounters({ className }: { className?: string }) {
       } catch {}
     };
     load();
-    const iv = setInterval(load, 15000);
+    const iv = setInterval(load, 45000); // Task 19: gentler poll (edge-cached)
     return () => {
       alive = false;
       clearInterval(iv);

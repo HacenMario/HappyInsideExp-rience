@@ -18,10 +18,19 @@ const globalForMongo = globalThis as unknown as MongoGlobal;
  * - dev           → survives HMR module reloads (no connection leak)
  * - Vercel serverless → reused across invocations of the same warm lambda
  *   (without this, every cold lambda instance would open new Atlas sockets)
- * - Railway / Docker / local → one pooled client per process. */
+ * - Railway / Docker / local → one pooled client per process.
+ *
+ * CONNECTION BUDGET (Task 19 — Atlas connection-limit protection):
+ * Every warm Vercel lambda instance holds its OWN pool. maxPoolSize is the
+ * per-instance ceiling, so the worst case is:  warm instances × maxPoolSize.
+ * 15 was far too generous for queries this small — 5 per instance keeps the
+ * Atlas connection count (M10 limit 1500) far below the ceiling while still
+ * serving bursts via Fluid-compute concurrency. maxIdleTimeMS=30s makes each
+ * pool SHRINK back to near-zero between traffic waves, so idle lambdas stop
+ * parking open sockets in Atlas. */
 if (!globalForMongo.__mongoPromise) {
   globalForMongo.__mongoClient = new MongoClient(uri, {
-    maxPoolSize: 15,
+    maxPoolSize: 5,
     serverSelectionTimeoutMS: 8000,
     connectTimeoutMS: 8000,
     maxIdleTimeMS: 30000,

@@ -35,7 +35,7 @@ export default function NotificationBell() {
       } catch {}
     };
     load();
-    const iv = setInterval(load, 30000);
+    const iv = setInterval(load, 60000); // Task 19: gentler poll
     return () => {
       alive = false;
       clearInterval(iv);

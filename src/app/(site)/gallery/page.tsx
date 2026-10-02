@@ -28,7 +28,7 @@ export default function GalleryPage() {
         .then((d) => setItems(d.media || []))
         .catch(() => {});
     load();
-    const iv = setInterval(load, 30000);
+    const iv = setInterval(load, 90000); // Task 19: gentler poll (edge-cached)
     return () => clearInterval(iv);
   }, []);
 

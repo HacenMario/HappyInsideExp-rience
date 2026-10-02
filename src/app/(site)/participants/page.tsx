@@ -31,7 +31,7 @@ export default function ParticipantsPage() {
         .then(setData)
         .catch(() => {});
     load();
-    const iv = setInterval(load, 20000);
+    const iv = setInterval(load, 60000); // Task 19: gentler poll (edge-cached)
     return () => clearInterval(iv);
   }, []);
 
