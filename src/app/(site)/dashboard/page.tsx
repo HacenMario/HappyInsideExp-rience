@@ -40,6 +40,7 @@ import {
   Hourglass,
   Award,
   Download,
+  ClipboardCheck,
   ListOrdered,
   ArrowUpCircle,
   LogOut,
@@ -376,7 +377,14 @@ export default function DashboardPage() {
                           />
                         </div>
                       ) : null}
-                      <div className="mt-6">
+                      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                        {/* Task 20 — prep hub entry */}
+                        <Button asChild variant="outline" className="rounded-full border-brand/40 font-extrabold text-brand hover:bg-brand hover:text-white">
+                          <Link href="/prep">
+                            <ClipboardCheck className="h-4 w-4" />
+                            {t.prep.title}
+                          </Link>
+                        </Button>
                         <Button variant="outline" onClick={cancelReg} disabled={busy} className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive">
                           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
                           {t.campReg.cancelReg}
@@ -452,7 +460,14 @@ export default function DashboardPage() {
                         />
                       </div>
                     ) : null}
-                    <div className="mt-6">
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                      {/* Task 20 — prep hub entry */}
+                      <Button asChild variant="outline" className="rounded-full border-brand/40 font-extrabold text-brand hover:bg-brand hover:text-white">
+                        <Link href="/prep">
+                          <ClipboardCheck className="h-4 w-4" />
+                          {t.prep.title}
+                        </Link>
+                      </Button>
                       <Button variant="outline" onClick={cancelReg} disabled={busy} className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive">
                         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
                         {t.campReg.cancelReg}

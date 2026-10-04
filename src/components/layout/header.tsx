@@ -36,6 +36,8 @@ import {
   Home,
   CalendarHeart,
   Image as ImageIcon,
+  Camera,
+  Network,
   ScrollText,
   FileText,
   Bell,
@@ -69,6 +71,8 @@ export default function Header() {
     { href: "/speakers", label: t.nav.speakers, icon: Users },
     { href: "/participants", label: t.nav.participants, icon: Users },
     { href: "/announcements", label: t.nav.announcements, icon: Megaphone },
+    { href: "/memories", label: t.nav.memories, icon: Camera },
+    { href: "/alumni", label: t.nav.alumni, icon: Network },
     { href: "/gallery", label: t.nav.gallery, icon: ImageIcon },
   ];
 

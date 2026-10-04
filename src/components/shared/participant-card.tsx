@@ -5,6 +5,7 @@ import { useLang } from "@/lib/i18n/context";
 import { useCampInfo } from "@/components/shared/camp-info";
 import { Button } from "@/components/ui/button";
 import StoryCardButton from "@/components/shared/story-card";
+import ExchangeCardButton from "@/components/shared/exchange-card";
 import { toast } from "@/hooks/use-toast";
 import { Download, Loader2, IdCard } from "lucide-react";
 
@@ -373,6 +374,8 @@ export default function ParticipantCard({
           code={code}
           status={status}
         />
+        {/* QR networking card — Task 20 */}
+        <ExchangeCardButton code={code} fullName={fullName} accountType={accountType} />
         <span className="flex w-full items-center justify-center gap-1.5 text-[11px] font-bold text-muted-foreground sm:w-auto">
           <IdCard className="h-3.5 w-3.5" />
           {status === "pending" ? t.dash.cardPendingNote : t.dash.cardPresentNote}

@@ -68,6 +68,7 @@ export interface UserDoc {
   recoveryAnswer?: string;
   status: "active" | "banned";
   createdAt: Date;
+  sharePhone?: boolean; // Task 20 — QR exchange: reveal phone on scan (default: hidden)
 }
 
 export interface CampSettingsDoc {
@@ -240,6 +241,41 @@ export interface VapidDoc {
   privateKey: string;
 }
 
+/* ---------- Task 20: community features (additive, no existing doc touched) ---------- */
+
+/* Participant prep-hub checklist progress. One doc per user; the checked
+ * list holds the item IDs the user ticked (survives HMR + devices). */
+export interface PrepProgressDoc {
+  _id?: unknown;
+  userId: string;
+  checked: string[];
+  updatedAt: Date;
+}
+
+/* Shared-camp-memories photo submitted by a registered participant.
+ * Moderation: admin approves before it appears in the public album.
+ * authorName stores the masked display name snapshot (first name + initial). */
+export interface MemoryDoc {
+  _id?: unknown;
+  userId: string;
+  authorName: string; // masked: "سارة ب." — never full name/phone
+  caption: string;
+  data: string; // base64 data URL (browser-compressed before upload)
+  mimeType: string;
+  size: number;
+  status: "pending" | "approved" | "rejected";
+  createdAt: Date;
+  reviewedAt?: Date;
+}
+
+/* Opt-in alumni network membership (Task 20). Kept OUT of the users doc
+ * so the users schema stays untouched; joining is reversible anytime. */
+export interface AlumniMemberDoc {
+  _id?: unknown;
+  userId: string;
+  optedInAt: Date;
+}
+
 /* Mobile devices registered by the Android app for background notifications.
  * phone is either the account phone or "guest:<id>" for anonymous devices
  * (guests receive broadcast notifications only). deviceToken is the device's
@@ -274,6 +310,9 @@ export async function collections() {
     waitlist: db.collection<WaitlistDoc>("camp_waitlist"),
     mobileDevices: db.collection<MobileDeviceDoc>("mobile_devices"),
     vapid: db.collection<VapidDoc>("vapid_keys"),
+    prepProgress: db.collection<PrepProgressDoc>("prep_progress"),
+    memories: db.collection<MemoryDoc>("camp_memories"),
+    alumni: db.collection<AlumniMemberDoc>("alumni_members"),
     seedMeta: db.collection<{ _id: string; version: number; seededAt: Date }>("seed_meta"),
   };
 }

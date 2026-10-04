@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import StatsCounters from "@/components/shared/stats-counters";
 import { SeatProgress } from "@/components/shared/seat-progress";
+import UrgencyBar from "@/components/shared/urgency-bar";
 import Lightbox from "@/components/shared/lightbox";
 import {
   Sparkles,
@@ -41,6 +42,7 @@ interface CampSettings {
   locationAr: string;
   locationFr: string;
   totalSeats: number;
+  registrationOpen?: boolean; // Task 20 — urgency bar reads this
   heroImage?: string | null; // data URL — replaces /images/hero.png
   programImage1?: string | null; // data URL — camp poster
   programImage2?: string | null; // data URL — detailed program
@@ -320,6 +322,14 @@ export default function LandingPage() {
       {/* ============ SEATS / REGISTER ============ */}
       <section className="relative py-6 sm:py-10">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
+          {settings && stats ? (
+            <UrgencyBar
+              registered={stats.registered}
+              totalSeats={stats.totalSeats}
+              registrationOpen={settings.registrationOpen !== false}
+              startDate={settings.startDate}
+            />
+          ) : null}
           <div className="card-glow relative overflow-hidden p-6 sm:p-8">
             <div className="blob end-6 top-6 h-24 w-24 bg-brand/30" />
             <div className="mb-5 flex flex-col items-center gap-1.5 text-center sm:flex-row sm:justify-between sm:text-start">

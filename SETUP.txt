@@ -1,8 +1,69 @@
 ==================================================
-Happy inside expérience — النسخة النهائية v14 / Version finale v14
+Happy inside expérience — النسخة النهائية v15 / Version finale v15
 مخيم الأخصائيين النفسيين في الجزائر — 16–19 أكتوبر 2026
 جاهز للنشر على Vercel و Railway ✈️ / Prêt pour Vercel & Railway
 ==================================================
+
+【 جديد في v15 / Nouveau dans v15 — 5 ميزات مجتمعية كبرى 】
+✔ مركز التحضير للمسجلين 🎒 (جديد، صفحة /prep): صفحة خاصة بالمشاركين
+  فقط — عدّاد تنازلي حيي، قائمة تحقق من 10 عناصر عملية تُحفظ
+  تلقائياً على حسابك (تظهر بنسبة إنجاز «أكملت 40%»)، معلومات
+  لوجستية (التواريخ والموقع من إعداداتك)، وبطاقات سريعة نحو
+  بطاقة المشارك وبطاقة التعارف وألبوم الذكريات. غير متاح للأدمن
+  وغير المسجلين — دون أي قسم واتساب (حسب الطلب).
+✔ شريط إلحاح ذكي 📊 (جديد): يعمل تلقائياً فوق بطاقة التسجيل في
+  الرئيسية حسب البيانات الحقيقية — عدّاد أيام هادئ، ثم «تبقّت
+  N مقاعد فقط» بلون كهرماني عند 15 أو أقل، ثم وضع «آخر فرصة»
+  النابض عند 5 أو أقل، وعند اكتمال المقاعد يتحول تلقائياً إلى
+  دعوة قائمة الانتظار. عند إغلاق التسجيل يعرض رسالة هادئة.
+✔ تبادل بطاقات QR 🔄 (جديد): زر «بطاقة تعارفي» بجانب بطاقة
+  المشارك يعرض رمز QR كبيراً يفتح عند مسحه بكاميرا أي هاتف صفحة
+  /exchange المهنية: الاسم مقنّعاً («أمين ت.») مع الفئة والولاية
+  ومكان العمل والنبذة وشارة «دفعة 2026» وزر «حفظ كجهة اتصال»
+  (ملف vCard يدخل دفتر الهاتف مباشرة). مفتاح خصوصية صريح:
+  «إظهار رقم هاتفي عند المسح» — معطّل افتراضياً، والرقم لا يظهر
+  أبداً إلا لمن فعّاله بنفسه. المسح الذاتي يعرض بطاقتك كاملة.
+✔ ألبوم الذكريات التشاركي 📸 (جديد، صفحة /memories): معرض شبكي
+  أنيق (أعمدة متجاوبة) لصور المشاركين المعتمدة مع الاسم الأول
+  المقنّع والعنوان وعارض Zoom كامل. المشارك يرفع صورته (ضغط
+  تلقائي في المتصفح بنفس منظومة الوسائط) فتدخل طابور إشراف
+  الأدمن (تبويب جديد «ألبوم الذكريات»: موافقة/رفض/حذف مع عدّاد
+  المعلّقة)، وشريط «مشاركاتي» يعرض حالة كل صورة.
+✔ شبكة خريجي المخيم 🌐 (جديد، صفحة /alumni): دليل انضمام اختياري
+  للمشاركين المؤكدين — بطاقات مهنية بالبحث الفوري (الاسم/
+  الولاية/مكان العمل)، شارة «دفعة 2026»، لوحة مزايا العضوية
+  (أولوية إبلاغ النسخة القادمة...)، انضمام/مغادرة بنقرة، وتعميم
+  صريح: لا هواتف ولا بريد إلكتروني — أبداً.
+✔ ترجمة شاملة AR/FR لكل الشاشات والنصوص، اتجاه RTL/LTR صحيح،
+  تجاوب كامل على الهاتف (390 بكسل: صفر تجاوز أفقي) والحاسوب،
+  وتأثيرات CSS جديدة (نبض الإلحاح، إطار سينمائي للمعرض) مع
+  احترام تفضيل تقليل الحركة.
+✔ 5 مسارات API جديدة (prep / exchange / memories / admin-memories
+  / alumni) بخصوصية مطبقة في الخادم نفسه، مع كاش حافة ذكي
+  للأدلة العامة — دون المساس بأي ميزة سابقة (الشهادة، QR
+  تسجيل الدخول، الستوري، البث المباشر، قائمة الانتظار).
+
+【 Les 5 nouveautés de v15 】
+✔ Espace préparation (/prep) : réservé aux inscrits — compte à
+  rebours, check-list 10 points sauvegardée sur le compte, infos
+  logistiques, raccourcis. Sans section WhatsApp (conforme).
+✔ Barre d'urgence intelligente : compte à rebours, puis « Plus
+  que N places », mode « dernière chance » à ≤5, et relais
+  liste d'attente quand c'est complet — piloté par les vraies
+  données, zéro intervention.
+✔ Carte réseau QR : bouton « Ma carte réseau » → QR → la caméra
+  du collègue ouvre /exchange (profil pro, nom masqué, badge
+  « Promo 2026 », bouton Enregistrer le contact / vCard).
+  Confidentialité : numéro masqué par défaut, révélé uniquement
+  sur activation explicite du titulaire.
+✔ Album souvenirs (/memories) : galerie publique des photos
+  validées (prénom masqué + titre + visionneuse zoom), upload
+  compressé côté navigateur, modération admin (nouvel onglet),
+  bandeau « Mes souvenirs » avec statuts.
+✔ Réseau des anciens (/alumni) : annuaire opt-in des inscrits
+  confirmés, recherche instantanée, badge « Promo 2026 », panel
+  d'avantages, adhésion/départ en un clic — jamais de téléphone
+  ni d'e-mail.
 
 【 جديد في v14 / Nouveau dans v14 — حماية حد اتصالات MongoDB 】
 ✔ خفض استهلاك اتصالات قاعدة البيانات بنسبة كبيرة (المشكلة: تجاوز الحد
