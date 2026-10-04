@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/providers";
+import { FONT_SCALE_BOOTSTRAP } from "@/lib/font-scale";
 
 /*
  * Fonts are SELF-HOSTED (public/fonts/ + @font-face in globals.css).
@@ -69,6 +70,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <head>
+        {/* Task 21 — restore the saved text size BEFORE hydration (no flash) */}
+        <script id="hiex-font-scale" dangerouslySetInnerHTML={{ __html: FONT_SCALE_BOOTSTRAP }} />
+      </head>
       <body className="antialiased bg-background text-foreground">
         {fontPreloads.map((font) => (
           <link

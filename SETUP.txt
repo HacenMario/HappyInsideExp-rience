@@ -1,8 +1,73 @@
 ==================================================
-Happy inside expérience — النسخة النهائية v15 / Version finale v15
+Happy inside expérience — النسخة النهائية v16 / Version finale v16
 مخيم الأخصائيين النفسيين في الجزائر — 16–19 أكتوبر 2026
 جاهز للنشر على Vercel و Railway ✈️ / Prêt pour Vercel & Railway
 ==================================================
+
+【 جديد في v16 / Nouveau dans v16 — تحديثات احترافية شاملة 】
+✔ نزع كامل لصفحة «شبكة الخريجين» وكل ما يتعلق بها (الصفحة، واجهة
+  API، روابط القائمة، النصوص) — بناءً على الطلب، دون المساس بأي
+  ميزة أخرى.
+✔ صفحة «آراء المشاركين في المخيم» ⭐ (جديدة، /testimonials): صفحة
+  أنيقة تعرض آراء المشاركين بعد توثيقها من طرف الإدارة — ملخص
+  تقييم ذهبي (المعدل + عدد المشاركين)، بطاقات اقتباس بالنجوم
+  والاسم والولاية والفئة، دعوة للحجز في الأسفل. تبويب أدمن جديد
+  «آراء المشاركين»: توثيق رأي (الاسم، الفئة طالب/أخصائي، الولاية،
+  تقييم بالنجوم 1-5، نص عربي + فرنسي اختياري، صورة اختيارية)،
+  تعديل، حذف، وإظهار/إخفاء بنقرة واحدة.
+✔ ذكاء الحجز في الواجهة: للمستخدم الذي حجز مقعده — تختفي بطاقة
+  «تبقّى N يومًا على انطلاق المخيم» نهائياً، ويتحول زر «احجز
+  مقعدك الآن» في كل بطاقات التسجيل إلى «لديك حجز قيد الانتظار»،
+  وبعد تأكيد الإدارة للدفع يصبح «مقعدك مؤكد ✅» (ولأعضاء قائمة
+  الانتظار: «أنت في قائمة الانتظار») — وكلها تقود إلى تسجيلي
+  في لوحة التحكم.
+✔ ساعة رملية ثلاثية الأبعاد ⏳ (جديدة): رسم CSS خالص بزجاج وإطار
+  ذهبي ورمل متساقط متحرك بجانب عبارة «تبقّى N يومًا على انطلاق
+  المخيم» — أنيقة وخفيفة وتحترم تفضيل تقليل الحركة.
+✔ موقع المخيم على خرائط Google 🗺️: تحديد مكان المخيم يدوياً من
+  الخريطة (نقرة واحدة) أو بزر «حدد موقعي» من تبويب إعدادات
+  الأدمن (خريطة تفاعلية بسحب الدبوس). الموقع يصبح قابلاً للضغط
+  في كل المنصة (شارة الرئيسية وصفحة الاتصال) ليفتح تطبيق Google
+  Maps مباشرة، مع بطاقة خريطة مدمجة أنيقة في الصفحة الرئيسية
+  (فوق بطاقة الأسئلة الشائعة) وداخل صفحة اتصل بنا.
+✔ إشعار فوري للأدمن عند كل حجز مقعد 🔔: يصل للوحة الأدمن بكل
+  التفاصيل (الاسم، رقم المقعد من الإجمالي، الهاتف، الفئة،
+  الولاية، رمز الحجز، المبلغ المستحق والحالة) والضغط عليه يفتح
+  مباشرة تبويب «تسجيلات المخيم».
+✔ تحكم بحجم النص في المنصة 🔠 (جديد): زر A− / A+ أنيق في أسفل
+  القائمة الجانبية يكبّر أو يصغّر نص الموقع كاملاً (4 مستويات)
+  مع زر إعادة افتراضي — يُحفظ الاختيار ويعود تلقائياً في كل زيارة.
+✔ تنظيم احترافي جديد لصفحة ألبوم الذكريات: ترويسة بإحصائيات حية،
+  بطاقة رفع محسّنة بالسحب والإفلات مع شرائح إرشادية وعدّاد
+  الأحرف، تبويبان واضحان (الذكريات المنشورة ↔ مشاركاتي مع شارات
+  الحالة)، وشبكة مصوّرات محسّنة.
+✔ ترجمة شاملة AR/FR لكل الشاشات الجديدة، اتجاه RTL/LTR صحيح،
+  وتجاوب كامل على الهاتف (صفر تجاوز أفقي) والحاسوب.
+
+【 Les nouveautés de v16 】
+✔ Suppression complète du réseau des anciens (page, API, liens,
+  textes) — sans toucher au reste.
+✔ Page « Avis des participants » (/testimonials) : moyenne dorée,
+  cartes-citations avec étoiles, wilaya et catégorie, onglet
+  admin de documentation (nom, catégorie, wilaya, note 1–5,
+  texte AR/FR, photo) avec publier/masquer, modifier, supprimer.
+✔ Intelligence de réservation : la carte « Encore N jours »
+  disparaît pour les inscrits ; les boutons deviennent « Votre
+  réservation est en attente » puis « Votre place est confirmée
+  ✅ » après validation du paiement (liste d'attente incluse).
+✔ Sablier 3D en CSS pur (verre, cadre doré, sable animé) à côté
+  du compte à rebours.
+✔ Lieu du camp sur Google Maps : choix manuel sur carte ou « Me
+  localiser » dans les réglages admin ; lieu cliquable partout
+  (ouverture directe de l'app Maps) + carte intégrée sur
+  l'accueil (au-dessus de la FAQ) et sur la page Contact.
+✔ Notification admin instantanée à chaque réservation avec tous
+  les détails, un clic ouvre « Inscriptions au camp ».
+✔ Contrôle de taille du texte A− / A+ en bas du menu latéral
+  (4 niveaux + réinitialisation, persistant).
+✔ Page Album souvenirs réorganisée : en-tête avec statistiques,
+  carte d'envoi avec glisser-déposer, onglets Album ↔ Mes
+  souvenirs, grille améliorée.
 
 【 جديد في v15 / Nouveau dans v15 — 5 ميزات مجتمعية كبرى 】
 ✔ مركز التحضير للمسجلين 🎒 (جديد، صفحة /prep): صفحة خاصة بالمشاركين

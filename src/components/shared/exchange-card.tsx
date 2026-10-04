@@ -114,7 +114,7 @@ export default function ExchangeCardButton({
           <div className="exchange-frame mx-auto w-full max-w-[300px] rounded-3xl border-2 border-brand-2/30 bg-gradient-to-b from-card to-muted/40 p-5 text-center shadow-lg">
             <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-brand-2/10 px-3 py-1 text-[11px] font-extrabold text-brand-2">
               <CatIcon className="h-3.5 w-3.5" />
-              {accountType === "student" ? t.alumni.student : t.alumni.specialist}
+              {accountType === "student" ? t.exchange.student : t.exchange.specialist}
             </div>
             <p className="truncate text-base font-black">{fullName}</p>
             <p dir="ltr" className="mt-0.5 text-[10px] font-bold tracking-widest text-muted-foreground">

@@ -137,7 +137,7 @@ function ExchangeInner() {
       `FN:${esc(p.fullName)}`,
       `N:${esc(p.fullName)};;;;`,
       `ORG:${esc(p.workplace)}`,
-      `NOTE:${esc(`${t.alumni.badge} — Happy inside expérience (${p.code})${p.bio ? `\n${p.bio}` : ""}`)}`,
+      `NOTE:${esc(`${t.exchange.badge} — Happy inside expérience (${p.code})${p.bio ? `\n${p.bio}` : ""}`)}`,
     ];
     if (p.phone) lines.push(`TEL;TYPE=CELL:${esc(p.phone)}`);
     lines.push("END:VCARD");
@@ -176,11 +176,11 @@ function ExchangeInner() {
               <div className="mb-1 flex flex-wrap justify-end gap-1.5">
                 <Badge className="bg-brand-2/15 px-2.5 py-1 text-[10px] font-black text-brand-2">
                   <CatIcon className="me-1 h-3 w-3" />
-                  {isStudent ? t.alumni.student : t.alumni.specialist}
+                  {isStudent ? t.exchange.student : t.exchange.specialist}
                 </Badge>
                 <Badge variant="outline" className="border-brand/40 px-2.5 py-1 text-[10px] font-black text-brand">
                   <BadgeCheck className="me-1 h-3 w-3" />
-                  {t.alumni.badge}
+                  {t.exchange.badge}
                 </Badge>
               </div>
             </div>

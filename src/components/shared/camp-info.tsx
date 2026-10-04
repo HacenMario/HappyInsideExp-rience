@@ -17,6 +17,8 @@ interface CampInfo {
   fee: number; // specialist price (legacy field, kept for compatibility)
   studentFee: number; // student price
   specialistFee: number; // specialist price (alias of fee)
+  mapLat: number | null; // Task 21 — exact camp pin (null = not set)
+  mapLng: number | null; // Task 21 — exact camp pin
   loaded: boolean;
 }
 
@@ -31,6 +33,8 @@ const EMPTY: CampInfo = {
   fee: 0,
   studentFee: 0,
   specialistFee: 0,
+  mapLat: null,
+  mapLng: null,
   loaded: false,
 };
 
@@ -60,6 +64,8 @@ export function CampInfoProvider({ children }: { children: React.ReactNode }) {
             ? s.studentFee
             : fee, // legacy DBs without studentFee → same as the main fee
         specialistFee: fee,
+        mapLat: typeof s.mapLat === "number" ? s.mapLat : null,
+        mapLng: typeof s.mapLng === "number" ? s.mapLng : null,
         loaded: true,
       });
     } catch {}

@@ -37,14 +37,15 @@ import {
   CalendarHeart,
   Image as ImageIcon,
   Camera,
-  Network,
   ScrollText,
   FileText,
   Bell,
   ChevronDown,
   X,
+  MessageSquareHeart,
 } from "lucide-react";
 import NotificationBell from "@/components/layout/notification-bell";
+import TextSizeControl from "@/components/layout/text-size-control";
 import { useCampInfo } from "@/components/shared/camp-info";
 import { cn } from "@/lib/utils";
 
@@ -72,7 +73,7 @@ export default function Header() {
     { href: "/participants", label: t.nav.participants, icon: Users },
     { href: "/announcements", label: t.nav.announcements, icon: Megaphone },
     { href: "/memories", label: t.nav.memories, icon: Camera },
-    { href: "/alumni", label: t.nav.alumni, icon: Network },
+    { href: "/testimonials", label: t.nav.testimonials, icon: MessageSquareHeart },
     { href: "/gallery", label: t.nav.gallery, icon: ImageIcon },
   ];
 
@@ -370,6 +371,11 @@ export default function Header() {
                       </Link>
                     </div>
                   )}
+                </div>
+
+                {/* Task 21 — global text size control (bottom of the side menu) */}
+                <div className="mt-4 border-t border-border pt-4 pb-2">
+                  <TextSizeControl />
                 </div>
               </div>
             </SheetContent>

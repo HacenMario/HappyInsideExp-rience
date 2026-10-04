@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { LogoMark } from "@/components/shared/logo";
+import MapPicker from "@/components/admin/map-picker";
 import {
   Loader2,
   Save,
@@ -17,6 +18,7 @@ import {
   ImagePlus,
   RotateCcw,
   Images,
+  MapPin,
 } from "lucide-react";
 import { fileToDataUrl } from "@/lib/image-client";
 
@@ -43,6 +45,8 @@ interface Settings {
   email: string;
   facebookUrl: string;
   instagramUrl: string;
+  mapLat?: number | null; // Task 21 — camp pin
+  mapLng?: number | null; // Task 21 — camp pin
   announcementBarActive: boolean;
   announcementBarFloating: boolean;
   announcementBarTextAr: string;
@@ -439,6 +443,25 @@ export default function SettingsTab() {
               <Input value={form.instagramUrl} onChange={(e) => set("instagramUrl", e.target.value)} className="h-10" dir="ltr" />
             </Field>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Camp location on the map (Task 21) */}
+      <Card className="card-glow border-0 p-0">
+        <CardContent className="p-6">
+          <h2 className="mb-1 flex items-center gap-2 text-base font-black">
+            <MapPin className="h-5 w-5 text-brand-3" />
+            {t.map.title}
+          </h2>
+          <p className="mb-4 text-xs text-muted-foreground">{t.map.adminHint}</p>
+          <MapPicker
+            lat={form.mapLat ?? null}
+            lng={form.mapLng ?? null}
+            onChange={(la, ln) =>
+              setForm((f) => (f ? { ...f, mapLat: la, mapLng: ln } : f))
+            }
+          />
+          <p className="mt-3 text-[11px] font-semibold text-muted-foreground">{t.map.adminSaveHint}</p>
         </CardContent>
       </Card>
 

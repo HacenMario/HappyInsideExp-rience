@@ -82,6 +82,8 @@ export interface CampSettingsDoc {
   descFr: string;
   locationAr: string;
   locationFr: string;
+  mapLat?: number | null; // Task 21 — exact camp pin (admin picks on map)
+  mapLng?: number | null; // Task 21 — exact camp pin (admin picks on map)
   startDate: string; // ISO
   endDate: string;
   totalSeats: number;
@@ -268,12 +270,20 @@ export interface MemoryDoc {
   reviewedAt?: Date;
 }
 
-/* Opt-in alumni network membership (Task 20). Kept OUT of the users doc
- * so the users schema stays untouched; joining is reversible anytime. */
-export interface AlumniMemberDoc {
+/* Task 21 — participant testimonials ("آراء المشاركين في المخيم").
+ * The admin documents each participant's opinion after the camp; only
+ * ACTIVE testimonials appear on the public page. */
+export interface TestimonialDoc {
   _id?: unknown;
-  userId: string;
-  optedInAt: Date;
+  name: string; // display name (may be masked by the admin, e.g. "سارة ب.")
+  accountType: "student" | "specialist";
+  wilaya: string;
+  rating: number; // 1..5
+  textAr: string;
+  textFr: string;
+  avatar?: string | null; // base64 data URL (optional)
+  active: boolean;
+  createdAt: Date;
 }
 
 /* Mobile devices registered by the Android app for background notifications.
@@ -312,7 +322,7 @@ export async function collections() {
     vapid: db.collection<VapidDoc>("vapid_keys"),
     prepProgress: db.collection<PrepProgressDoc>("prep_progress"),
     memories: db.collection<MemoryDoc>("camp_memories"),
-    alumni: db.collection<AlumniMemberDoc>("alumni_members"),
+    testimonials: db.collection<TestimonialDoc>("camp_testimonials"),
     seedMeta: db.collection<{ _id: string; version: number; seededAt: Date }>("seed_meta"),
   };
 }

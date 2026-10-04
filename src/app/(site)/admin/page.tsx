@@ -15,6 +15,7 @@ import AnnouncementsTab from "@/components/admin/announcements-tab";
 import SpeakersTab from "@/components/admin/speakers-tab";
 import MediaTab from "@/components/admin/media-tab";
 import MemoriesTab from "@/components/admin/memories-tab";
+import TestimonialsTab from "@/components/admin/testimonials-tab";
 import NotificationsTab from "@/components/admin/notifications-tab";
 import MessagesTab from "@/components/admin/messages-tab";
 import SuggestionsTab from "@/components/admin/suggestions-tab";
@@ -35,6 +36,7 @@ import {
   HelpCircle,
   Shield,
   Camera,
+  MessageSquareHeart,
 } from "lucide-react";
 
 const TABS = [
@@ -48,6 +50,7 @@ const TABS = [
   { key: "speakers", icon: Users2, badge: false },
   { key: "media", icon: ImageIcon, badge: false },
   { key: "memories", icon: Camera, badge: false },
+  { key: "testimonials", icon: MessageSquareHeart, badge: false },
   { key: "messages", icon: MessagesSquare, badge: false },
   { key: "suggestions", icon: Lightbulb, badge: false },
   { key: "faq", icon: HelpCircle, badge: false },
@@ -160,6 +163,7 @@ export default function AdminPage() {
             {tab === "speakers" ? <SpeakersTab /> : null}
             {tab === "media" ? <MediaTab /> : null}
             {tab === "memories" ? <MemoriesTab /> : null}
+            {tab === "testimonials" ? <TestimonialsTab /> : null}
             {tab === "messages" ? <MessagesTab /> : null}
             {tab === "suggestions" ? <SuggestionsTab /> : null}
             {tab === "faq" ? <FaqTab /> : null}

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useLang } from "@/lib/i18n/context";
 import { useToast } from "@/hooks/use-toast";
 import { useCampInfo } from "@/components/shared/camp-info";
+import CampMapCard from "@/components/shared/camp-map-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +25,13 @@ export default function ContactPage() {
   const instagram = camp.instagram || "https://instagram.com/happyinside.experience";
   const intlPhone = waNumber.startsWith("213") ? `+${waNumber}` : `+213${waNumber.replace(/^0/, "")}`;
   const telNumber = waNumber.startsWith("213") ? `0${waNumber.slice(3)}` : waNumber;
+
+  /* Task 21 — the camp location opens Google Maps (app on mobile) */
+  const mapsQuery =
+    typeof camp.mapLat === "number" && typeof camp.mapLng === "number"
+      ? `${camp.mapLat},${camp.mapLng}`
+      : "Zemmouri, Boumerdès, Algérie";
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +109,13 @@ export default function ContactPage() {
                     <p className="truncate text-xs font-semibold text-brand-2 underline-offset-2 hover:underline" dir="ltr">{email}</p>
                   </div>
                 </a>
-                <div className="flex items-center gap-3 rounded-2xl bg-muted/70 p-3.5">
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 rounded-2xl bg-muted/70 p-3.5 transition-all hover:scale-[1.02] hover:bg-muted hover:shadow-md"
+                  title={t.map.openInMaps}
+                >
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-3 text-white shadow-md">
                     <MapPin className="h-5 w-5" />
                   </div>
@@ -109,7 +123,7 @@ export default function ContactPage() {
                     <p className="text-sm font-black">{t.hero.location}</p>
                     <p className="text-xs text-muted-foreground">{lang === "ar" ? "زموري، بومرداس — الجزائر" : "Zemmouri, Boumerdès — Algérie"}</p>
                   </div>
-                </div>
+                </a>
                 <div className="border-t border-border pt-4">
                   <p className="mb-2.5 text-xs font-black uppercase text-muted-foreground">{t.contact.followUs}</p>
                   <div className="flex gap-2">
@@ -214,6 +228,19 @@ export default function ContactPage() {
               </form>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Task 21 — embedded Google Maps card */}
+        <div className="mt-6">
+          <CampMapCard
+            coords={
+              typeof camp.mapLat === "number" && typeof camp.mapLng === "number"
+                ? { lat: camp.mapLat, lng: camp.mapLng }
+                : null
+            }
+            locationLabel={lang === "ar" ? "زموري، بومرداس — الجزائر" : "Zemmouri, Boumerdès — Algérie"}
+            compact
+          />
         </div>
       </div>
     </div>

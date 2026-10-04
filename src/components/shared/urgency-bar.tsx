@@ -2,8 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { Flame, Hourglass, ListOrdered, Ticket } from "lucide-react";
+import { Flame, ListOrdered, Ticket } from "lucide-react";
 import { useLang } from "@/lib/i18n/context";
+import Hourglass3D from "@/components/shared/hourglass-3d";
 import { cn } from "@/lib/utils";
 
 /* ============================================================
@@ -45,8 +46,8 @@ export default function UrgencyBar({
   /* -------- registration closed → calm neutral notice -------- */
   if (!registrationOpen) {
     return (
-      <div className="mx-auto mb-4 flex max-w-4xl items-center justify-center gap-2 rounded-2xl border border-border/70 bg-muted/40 px-4 py-3 text-center text-sm font-bold text-muted-foreground">
-        <Hourglass className="h-4 w-4 shrink-0" />
+      <div className="mx-auto mb-4 flex max-w-4xl items-center justify-center gap-2.5 rounded-2xl border border-border/70 bg-muted/40 px-4 py-3 text-center text-sm font-bold text-muted-foreground">
+        <Hourglass3D size={22} animated={false} />
         {u.closed}
       </div>
     );
@@ -99,7 +100,7 @@ export default function UrgencyBar({
   return (
     <UrgencyShell
       tone="calm"
-      icon={<Hourglass className="h-5 w-5 shrink-0" />}
+      icon={<Hourglass3D size={28} />}
       text={days === 0 ? u.today : days === 1 ? u.oneDay : fmt(u.daysTo, { n: days })}
       cta={u.cta}
       days={days}
@@ -141,7 +142,7 @@ function UrgencyShell({
         )}
       >
         {icon}
-        <span>{text}</span>
+        <span className="flex items-center gap-2">{text}</span>
         {days !== null && days > 1 && tone !== "calm" ? (
           <span className="hidden text-xs font-bold text-muted-foreground sm:inline">
             · {fmt(t.urgency.daysTo, { n: days })}

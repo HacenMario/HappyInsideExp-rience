@@ -120,9 +120,11 @@ export async function POST(req: NextRequest) {
     // Pricing category of the registrant (falls back to specialist for
     // legacy accounts created before accountType existed).
     let accountType: "student" | "specialist" = "specialist";
+    let userWilaya = "";
     try {
       const user = await c.users.findOne({ _id: new ObjectId(session.uid) });
       if (user?.accountType === "student") accountType = "student";
+      if (user?.wilaya) userWilaya = user.wilaya;
     } catch {
       // invalid uid shape → keep the default
     }
@@ -154,6 +156,48 @@ export async function POST(req: NextRequest) {
       status: "pending", // stays pending until the admin validates the payment
       createdAt: new Date(),
     });
+
+    /* Task 21 — instant notification for EVERY admin with the FULL booking
+     * details; clicking it opens the "تسجيلات المخيم" admin tab. */
+    try {
+      const admins = await c.users
+        .find({ role: "admin" }, { projection: { _id: 1 } })
+        .toArray();
+      if (admins.length > 0) {
+        const seatNo = occupied + 1;
+        const catAr = accountType === "student" ? "طالب/طالبة" : "أخصائي/أخصائية";
+        const catFr = accountType === "student" ? "Étudiant·e" : "Psychologue";
+        const now = new Date();
+        const docs = admins.map((adm) => ({
+          userId: adm._id!.toString(),
+          titleAr: "🎉 حجز مقعد جديد في المخيم!",
+          titleFr: "🎉 Nouvelle réservation de place !",
+          bodyAr:
+            `${session.fullName} حجز المقعد رقم ${seatNo} من أصل ${settings.totalSeats}.\n` +
+            `📱 الهاتف: ${session.phone}\n` +
+            `👤 الفئة: ${catAr}\n` +
+            `📍 الولاية: ${userWilaya || "غير محددة"}\n` +
+            `🔖 رمز الحجز: ${code}\n` +
+            `💰 المبلغ المستحق: ${new Intl.NumberFormat("fr-FR").format(amountDue)} دج\n` +
+            `⏳ الحالة: بانتظار تأكيد الدفع — اضغط لفتح «تسجيلات المخيم».`,
+          bodyFr:
+            `${session.fullName} a réservé la place n° ${seatNo} sur ${settings.totalSeats}.\n` +
+            `📱 Téléphone : ${session.phone}\n` +
+            `👤 Catégorie : ${catFr}\n` +
+            `📍 Wilaya : ${userWilaya || "non précisée"}\n` +
+            `🔖 Code de réservation : ${code}\n` +
+            `💰 Montant dû : ${new Intl.NumberFormat("fr-FR").format(amountDue)} DA\n` +
+            `⏳ Statut : en attente de confirmation du paiement — cliquez pour ouvrir « Inscriptions au camp ».`,
+          link: "/admin?tab=registrations",
+          readBy: [] as string[],
+          createdAt: now,
+        }));
+        await c.notifications.insertMany(docs);
+      }
+    } catch (e) {
+      // the booking itself already succeeded — never fail it because of the notify
+      console.error("admin booking notification failed", e);
+    }
 
     const remaining = Math.max(0, settings.totalSeats - occupied - 1);
     return NextResponse.json({ ok: true, seatsLeft: remaining, status: "pending", accountType, amountDue });

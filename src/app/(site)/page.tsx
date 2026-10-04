@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import StatsCounters from "@/components/shared/stats-counters";
 import { SeatProgress } from "@/components/shared/seat-progress";
 import UrgencyBar from "@/components/shared/urgency-bar";
+import CampMapCard from "@/components/shared/camp-map-card";
 import Lightbox from "@/components/shared/lightbox";
 import {
   Sparkles,
@@ -30,6 +31,9 @@ import {
   Leaf,
   ImagePlus,
   ZoomIn,
+  BadgeCheck,
+  Clock3,
+  ListOrdered,
 } from "lucide-react";
 
 interface CampSettings {
@@ -46,6 +50,8 @@ interface CampSettings {
   heroImage?: string | null; // data URL — replaces /images/hero.png
   programImage1?: string | null; // data URL — camp poster
   programImage2?: string | null; // data URL — detailed program
+  mapLat?: number | null; // Task 21 — exact camp pin
+  mapLng?: number | null; // Task 21 — exact camp pin
 }
 
 interface Speaker {
@@ -84,23 +90,33 @@ function useCountdown(target: string) {
   return diff;
 }
 
+/* My registration status for the current session user — drives the smart
+   CTAs: a user who already booked never sees "احجز مقعدك الآن" again. */
+type MyRegStatus = "none" | "pending" | "confirmed" | "waitlist";
+
 /* BookCta — the "احجز مقعدك الآن" button used across the landing page.
    Logged-in users go straight to the camp registration card inside the
    dashboard ("تسجيلي" tab); visitors are sent to account creation first,
    and the register/login pages bring them back to that same card after
-   (auto-)login. */
+   (auto-)login.
+   Task 21: when the visitor already holds a booking the label switches to
+   a status phrase (pending booking / confirmed seat / waitlist) instead of
+   inviting them to book again. */
 function BookCta({
   className,
   variant = "default",
   size = "lg",
   children,
+  status = "none",
 }: {
   className?: string;
   variant?: "default" | "outline";
   size?: "default" | "lg" | "sm";
   children: React.ReactNode;
+  status?: MyRegStatus;
 }) {
   const { user, loading } = useSession();
+  const { t } = useLang();
   const router = useRouter();
   const book = () => {
     if (loading) return; // session still resolving — ignore momentary clicks
@@ -110,26 +126,45 @@ function BookCta({
       router.push("/register?redirect=booking");
     }
   };
+  const statusLabel =
+    status === "pending"
+      ? t.campReg.ctaPending
+      : status === "confirmed"
+        ? t.campReg.ctaConfirmed
+        : status === "waitlist"
+          ? t.campReg.ctaWaitlist
+          : null;
+  const StatusIcon =
+    status === "confirmed" ? BadgeCheck : status === "pending" ? Clock3 : status === "waitlist" ? ListOrdered : null;
   return (
     <Button
       size={size}
       variant={variant}
       onClick={book}
       className={className}
-      aria-label={typeof children === "string" ? children : undefined}
+      aria-label={statusLabel ?? (typeof children === "string" ? children : undefined)}
     >
-      {children}
+      {statusLabel ? (
+        <>
+          {StatusIcon ? <StatusIcon className="h-5 w-5" /> : null}
+          {statusLabel}
+        </>
+      ) : (
+        children
+      )}
     </Button>
   );
 }
 
 export default function LandingPage() {
   const { t, lang, dir } = useLang();
+  const { user } = useSession();
   const [settings, setSettings] = useState<CampSettings | null>(null);
   const [stats, setStats] = useState<{ registered: number; totalSeats: number } | null>(null);
   const [speakers, setSpeakers] = useState<Speaker[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [lightbox, setLightbox] = useState<{ src: string; alt: string; caption?: string } | null>(null);
+  const [rawStatus, setRawStatus] = useState<MyRegStatus>("none");
 
   const loadCamp = React.useCallback(() => {
     fetch("/api/camp", { cache: "no-store" })
@@ -158,12 +193,42 @@ export default function LandingPage() {
     return () => window.removeEventListener("camp-settings-updated", handler);
   }, [loadCamp]);
 
+  /* Task 21 — my booking status (hides the urgency/countdown card and
+     relabels every "احجز مقعدك الآن" button once the user has booked). */
+  useEffect(() => {
+    if (!user || user.role === "admin") return;
+    let alive = true;
+    fetch("/api/registration", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!alive) return;
+        const st = d.registration?.status;
+        if (st === "pending" || st === "confirmed") setRawStatus(st);
+        else if (d.waitlist) setRawStatus("waitlist");
+        else setRawStatus("none");
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [user]);
+  /* derived: guests and admins always see the neutral booking CTAs */
+  const myStatus: MyRegStatus = user && user.role !== "admin" ? rawStatus : "none";
+
   const countdown = useCountdown(settings?.startDate || "2026-10-15T00:00:00.000Z");
   const slogan = settings ? (lang === "ar" ? settings.sloganAr : settings.sloganFr) : t.slogan;
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
   const heroSrc = settings?.heroImage || "/images/hero.png";
   const programPoster = settings?.programImage1 || "/images/program-poster.jpg";
   const programDetails = settings?.programImage2 || "/images/program-details.jpg";
+  const hasSeat = myStatus === "pending" || myStatus === "confirmed";
+  const campCoords =
+    settings && typeof settings.mapLat === "number" && typeof settings.mapLng === "number"
+      ? { lat: settings.mapLat, lng: settings.mapLng }
+      : null;
+  const mapsUrl = campCoords
+    ? `https://www.google.com/maps/search/?api=1&query=${campCoords.lat}%2C${campCoords.lng}`
+    : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("Zemmouri, Boumerdès, Algérie");
   const programImages = [
     { src: programPoster, title: t.program.posterTitle, ratio: "aspect-[4/5]" },
     { src: programDetails, title: t.program.detailsTitle, ratio: "aspect-[2/3]" },
@@ -211,15 +276,23 @@ export default function LandingPage() {
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-xs font-bold shadow-sm ring-1 ring-border">
                   <MoonStar className="h-4 w-4 text-brand-2" /> {t.hero.duration}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-xs font-bold shadow-sm ring-1 ring-border">
+                {/* Task 21 — the camp location opens Google Maps (app on mobile) */}
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-2 text-xs font-bold shadow-sm ring-1 ring-border transition-all hover:-translate-y-0.5 hover:text-brand-3 hover:shadow-md"
+                  title={t.map.openInMaps}
+                >
                   <MapPin className="h-4 w-4 text-brand-3" /> {t.hero.location}
-                </span>
+                </a>
               </div>
 
               {/* CTAs */}
               <div className="reveal-up mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start" style={{ animationDelay: "460ms" }}>
                 <BookCta
                   size="lg"
+                  status={myStatus}
                   className="group relative overflow-hidden rounded-full px-8 text-base font-extrabold shadow-xl shadow-brand/30"
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-500 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full" />
@@ -322,7 +395,9 @@ export default function LandingPage() {
       {/* ============ SEATS / REGISTER ============ */}
       <section className="relative py-6 sm:py-10">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          {settings && stats ? (
+          {/* Task 21 — the urgency/countdown card is hidden from users who
+              already hold a seat (pending or confirmed) */}
+          {settings && stats && !hasSeat ? (
             <UrgencyBar
               registered={stats.registered}
               totalSeats={stats.totalSeats}
@@ -339,6 +414,7 @@ export default function LandingPage() {
               </div>
               <BookCta
                 size="lg"
+                status={myStatus}
                 className="rounded-full px-7 font-extrabold shadow-lg shadow-brand/30"
               >
                 {t.hero.ctaRegister} ✨
@@ -393,7 +469,7 @@ export default function LandingPage() {
                   <h3 className="text-lg font-black leading-snug">{slogan}</h3>
                   <p className="mt-2 text-sm opacity-90">{t.footer.about}</p>
                 </div>
-                <BookCta className="rounded-full bg-white font-extrabold text-brand hover:bg-white/90">
+                <BookCta className="rounded-full bg-white font-extrabold text-brand hover:bg-white/90" status={myStatus}>
                   {t.hero.ctaRegister}
                   <Arrow className="h-4 w-4" />
                 </BookCta>
@@ -539,6 +615,17 @@ export default function LandingPage() {
         </section>
       ) : null}
 
+      {/* ============ CAMP MAP (Task 21) ============ */}
+      <section className="relative pb-4 pt-2 sm:pt-4">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+          <CampMapCard
+            coords={campCoords}
+            locationLabel={settings ? (lang === "ar" ? settings.locationAr : settings.locationFr) : t.hero.location}
+            datesLabel={t.hero.date}
+          />
+        </div>
+      </section>
+
       {/* ============ FAQ PREVIEW + CTA ============ */}
       <section className="relative py-14 sm:py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
@@ -558,6 +645,7 @@ export default function LandingPage() {
                 <BookCta
                   size="lg"
                   variant="outline"
+                  status={myStatus}
                   className="rounded-full border-white/60 bg-white/10 px-7 font-extrabold text-white hover:bg-white/20"
                 >
                   {t.hero.ctaRegister} ✨

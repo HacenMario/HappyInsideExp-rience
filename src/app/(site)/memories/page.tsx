@@ -1,10 +1,8 @@
 "use client";
 
-import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "@/lib/session-context";
 import { useLang } from "@/lib/i18n/context";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { LogoSkeleton } from "@/components/shared/logo";
@@ -22,15 +20,18 @@ import {
   CircleCheck,
   CircleX,
   Info,
+  ShieldCheck,
+  Sparkles,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* ============================================================
- * /memories (Task 20) — SHARED MEMORIES ALBUM
- * Public masonry gallery of approved participant photos (masked
- * author + caption + lightbox). Logged-in participants get an
- * upload card (browser-compressed → admin moderation) and a
- * "my submissions" strip with status chips + delete.
+ * /memories (Task 20 · redesigned in Task 21) — SHARED MEMORIES
+ * ALBUM. Organized in clear sections: hero header with live stats,
+ * a polished upload card (drag & drop + guidelines), a two-tab
+ * area (published album ↔ my submissions with status chips), and
+ * a cinematic masonry grid with lightbox. Full AR/FR + RTL/LTR.
  * ============================================================ */
 
 interface MemoryItem {
@@ -59,11 +60,12 @@ export default function MemoriesPage() {
 }
 
 function MemoriesInner() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { user } = useSession();
 
   const [items, setItems] = useState<MemoryItem[] | null>(null);
   const [mine, setMine] = useState<MyMemory[]>([]);
+  const [tab, setTab] = useState<"album" | "mine">("album");
   const [lightbox, setLightbox] = useState<{ src: string; alt: string; caption?: string } | null>(null);
 
   const load = useCallback(() => {
@@ -90,134 +92,217 @@ function MemoriesInner() {
   }, [load, loadMine]);
 
   const isParticipant = !!user && user.role !== "admin";
+  const pendingCount = mine.filter((m) => m.status === "pending").length;
 
   return (
     <div className="relative min-h-[80vh] py-10">
       <div className="hero-mesh absolute inset-0 -z-10 opacity-30" />
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        {/* header */}
-        <div className="mb-8 text-center">
+        {/* ============ 1 · HERO HEADER ============ */}
+        <header className="mb-8 text-center">
           <Badge className="mb-3 border-brand/40 bg-brand/10 px-3.5 py-1.5 text-xs font-black text-brand">
             <Camera className="me-1.5 h-3.5 w-3.5" />
-            {t.alumni.badge}
+            {t.memories.badge}
           </Badge>
           <h1 className="text-2xl font-black sm:text-3xl">{t.memories.title}</h1>
-          <p className="mt-2 text-sm text-muted-foreground sm:text-base">{t.memories.subtitle}</p>
-        </div>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">{t.memories.subtitle}</p>
 
-        {/* upload card (participants only) */}
+          {/* live stats strip */}
+          <div className="mx-auto mt-5 flex max-w-md items-center justify-center gap-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-black shadow-sm">
+              <Images className="h-3.5 w-3.5 text-brand-2" />
+              {items ? (
+                <>
+                  <span className="tabular-nums text-brand">{items.length}</span>
+                  <span className="text-muted-foreground">{t.memories.statsPhotos}</span>
+                </>
+              ) : (
+                <span className="shimmer inline-block h-3 w-16 rounded-full" />
+              )}
+            </span>
+            {isParticipant && mine.length > 0 ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-black shadow-sm">
+                <ImagePlus className="h-3.5 w-3.5 text-brand-3" />
+                <span className="tabular-nums text-brand-3">{mine.length}</span>
+                <span className="text-muted-foreground">{t.memories.myMemories}</span>
+              </span>
+            ) : null}
+          </div>
+        </header>
+
+        {/* ============ 2 · UPLOAD (participants only) ============ */}
         {isParticipant ? (
-          <UploadCard onSubmitted={() => { loadMine(); }} />
+          <UploadCard
+            onSubmitted={() => {
+              loadMine();
+              load();
+              setTab("mine");
+            }}
+          />
         ) : (
-          <div className="mx-auto mb-8 max-w-2xl rounded-2xl border border-border/70 bg-muted/30 p-4 text-center text-[13px] font-bold text-muted-foreground">
+          <div className="mx-auto mb-8 flex max-w-2xl items-center justify-center gap-2 rounded-2xl border border-border/70 bg-muted/30 p-4 text-center text-[13px] font-bold text-muted-foreground">
+            <Sparkles className="h-4 w-4 shrink-0 text-brand" />
             {t.memories.loginToUpload}
           </div>
         )}
 
-        {/* my submissions */}
-        {isParticipant && mine.length > 0 ? (
-          <section className="mb-8">
-            <h2 className="mb-3 flex items-center gap-2 text-base font-black">
-              <Images className="h-4 w-4 text-brand" />
-              {t.memories.myMemories}
-              <span className="text-[11px] font-bold text-muted-foreground">({mine.length})</span>
-            </h2>
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {mine.map((m) => (
-                <div
-                  key={m.id}
-                  className="relative w-36 shrink-0 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm"
-                >
-                  <img
-                    src={m.data}
-                    alt={m.caption || ""}
-                    className="h-28 w-full cursor-pointer object-cover"
-                    onClick={() => setLightbox({ src: m.data, alt: m.caption || "", caption: m.caption })}
-                  />
-                  <div className="flex items-center justify-between gap-1 p-2">
-                    <StatusChip status={m.status} />
-                    {m.status !== "approved" ? (
-                      <button
-                        onClick={async () => {
-                          try {
-                            const r = await fetch("/api/memories", {
-                              method: "DELETE",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ id: m.id }),
-                            });
-                            if (!r.ok) throw new Error();
-                            toast({ title: t.memories.deleted });
-                            loadMine();
-                          } catch {
-                            toast({ title: t.memories.errorGeneric, variant: "destructive" });
-                          }
-                        }}
-                        className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                        aria-label={t.memories.deleteMine}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
+        {/* ============ 3 · TABS: ALBUM ↔ MY SUBMISSIONS ============ */}
+        <div className="mb-5 flex justify-center">
+          <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm" role="tablist">
+            <button
+              role="tab"
+              aria-selected={tab === "album"}
+              onClick={() => setTab("album")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-black transition-all sm:text-sm",
+                tab === "album" ? "bg-gradient-to-r from-brand to-brand-2 text-white shadow-md" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Images className="h-4 w-4" />
+              {t.memories.albumTitle}
+              {items ? <span className="tabular-nums opacity-80">({items.length})</span> : null}
+            </button>
+            {isParticipant ? (
+              <button
+                role="tab"
+                aria-selected={tab === "mine"}
+                onClick={() => setTab("mine")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-black transition-all sm:text-sm",
+                  tab === "mine" ? "bg-gradient-to-r from-brand-3 to-brand text-white shadow-md" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <ImagePlus className="h-4 w-4" />
+                {t.memories.myMemories}
+                {mine.length > 0 ? <span className="tabular-nums opacity-80">({mine.length})</span> : null}
+                {pendingCount > 0 ? (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-400 px-1 text-[9px] font-black text-amber-950">
+                    {pendingCount}
+                  </span>
+                ) : null}
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        {/* ============ 4a · PUBLISHED ALBUM ============ */}
+        {tab === "album" ? (
+          <section>
+            <div className="mb-4 flex items-center justify-center gap-2 text-[11px] font-bold text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+              {t.memories.moderationNote}
             </div>
+
+            {items === null ? (
+              <div className="columns-2 gap-3 sm:columns-3 lg:columns-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="shimmer mb-3 h-44 break-inside-avoid rounded-2xl" />
+                ))}
+              </div>
+            ) : items.length === 0 ? (
+              <div className="rounded-[2rem] border border-dashed border-border bg-card/60 p-12 text-center">
+                <Camera className="mx-auto mb-3 h-10 w-10 text-muted-foreground/60" />
+                <p className="text-sm font-bold text-muted-foreground">{t.memories.empty}</p>
+                {isParticipant ? (
+                  <p className="mt-1 text-xs font-black text-brand">{t.memories.shareMore} ↑</p>
+                ) : null}
+              </div>
+            ) : (
+              <div className="columns-2 gap-3 sm:columns-3 lg:columns-4">
+                {items.map((m) => (
+                  <figure
+                    key={m.id}
+                    className="memories-card group mb-3 break-inside-avoid overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    <img
+                      src={m.data}
+                      alt={m.caption || ""}
+                      loading="lazy"
+                      className="w-full cursor-zoom-in object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      onClick={() =>
+                        setLightbox({
+                          src: m.data,
+                          alt: m.caption || "",
+                          caption: `${t.memories.by} ${m.author}${m.caption ? ` — ${m.caption}` : ""}`,
+                        })
+                      }
+                    />
+                    {m.caption || m.author ? (
+                      <figcaption className="p-2.5">
+                        {m.caption ? (
+                          <p className="truncate text-[12px] font-black leading-snug">{m.caption}</p>
+                        ) : null}
+                        <p className="mt-0.5 flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-brand/30 to-brand-2/30 text-[8px] font-black text-brand">
+                            {m.author.charAt(0)}
+                          </span>
+                          {t.memories.by} {m.author}
+                        </p>
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                ))}
+              </div>
+            )}
           </section>
         ) : null}
 
-        {/* public album */}
-        <section>
-          <div className="mb-4 flex items-center justify-center gap-2 text-[11px] font-bold text-muted-foreground">
-            <Info className="h-3.5 w-3.5" />
-            {t.memories.moderationNote}
-          </div>
-
-          {items === null ? (
-            <div className="columns-2 gap-3 sm:columns-3 lg:columns-4">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="shimmer mb-3 h-44 break-inside-avoid rounded-2xl" />
-              ))}
-            </div>
-          ) : items.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-border p-12 text-center">
-              <Camera className="mx-auto mb-3 h-10 w-10 text-muted-foreground/60" />
-              <p className="text-sm font-bold text-muted-foreground">{t.memories.empty}</p>
-            </div>
-          ) : (
-            <div className="columns-2 gap-3 sm:columns-3 lg:columns-4">
-              {items.map((m) => (
-                <figure
-                  key={m.id}
-                  className="memories-card group mb-3 break-inside-avoid overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-                >
-                  <img
-                    src={m.data}
-                    alt={m.caption || ""}
-                    loading="lazy"
-                    className="w-full cursor-zoom-in object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                    onClick={() =>
-                      setLightbox({
-                        src: m.data,
-                        alt: m.caption || "",
-                        caption: `${t.memories.by} ${m.author}${m.caption ? ` — ${m.caption}` : ""}`,
-                      })
-                    }
-                  />
-                  {m.caption || m.author ? (
-                    <figcaption className="p-2.5">
-                      {m.caption ? (
-                        <p className="truncate text-[12px] font-black leading-snug">{m.caption}</p>
+        {/* ============ 4b · MY SUBMISSIONS ============ */}
+        {tab === "mine" && isParticipant ? (
+          <section>
+            {mine.length === 0 ? (
+              <div className="rounded-[2rem] border border-dashed border-border bg-card/60 p-12 text-center">
+                <ImagePlus className="mx-auto mb-3 h-10 w-10 text-muted-foreground/60" />
+                <p className="text-sm font-bold text-muted-foreground">{t.memories.shareMore}</p>
+                <p className="mt-1 text-xs font-black text-brand">{t.memories.uploadTitle} ↑</p>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {mine.map((m) => (
+                  <div
+                    key={m.id}
+                    className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    <img
+                      src={m.data}
+                      alt={m.caption || ""}
+                      className="h-40 w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      onClick={() => setLightbox({ src: m.data, alt: m.caption || "", caption: m.caption })}
+                    />
+                    <div className="flex items-center justify-between gap-1 p-2.5">
+                      <StatusChip status={m.status} />
+                      {m.status !== "approved" ? (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const r = await fetch("/api/memories", {
+                                method: "DELETE",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ id: m.id }),
+                              });
+                              if (!r.ok) throw new Error();
+                              toast({ title: t.memories.deleted });
+                              loadMine();
+                            } catch {
+                              toast({ title: t.memories.errorGeneric, variant: "destructive" });
+                            }
+                          }}
+                          className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                          aria-label={t.memories.deleteMine}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       ) : null}
-                      <p className="mt-0.5 text-[10px] font-bold text-muted-foreground">
-                        {t.memories.by} {m.author}
-                      </p>
-                    </figcaption>
-                  ) : null}
-                </figure>
-              ))}
-            </div>
-          )}
-        </section>
+                    </div>
+                    {m.caption ? (
+                      <p className="truncate px-2.5 pb-2 text-[11px] font-bold text-muted-foreground">{m.caption}</p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : null}
       </div>
 
       {lightbox ? (
@@ -227,6 +312,7 @@ function MemoriesInner() {
   );
 }
 
+/* ---------- status chip (my submissions) ---------- */
 function StatusChip({ status }: { status: MyMemory["status"] }) {
   const { t } = useLang();
   const map = {
@@ -243,6 +329,7 @@ function StatusChip({ status }: { status: MyMemory["status"] }) {
   );
 }
 
+/* ---------- polished upload card (drag & drop + guidelines) ---------- */
 function UploadCard({ onSubmitted }: { onSubmitted: () => void }) {
   const { t } = useLang();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -250,9 +337,14 @@ function UploadCard({ onSubmitted }: { onSubmitted: () => void }) {
   const [preview, setPreview] = useState<string>("");
   const [caption, setCaption] = useState("");
   const [busy, setBusy] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const pick = async (f: File | null) => {
     if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      toast({ title: t.memories.errorGeneric, variant: "destructive" });
+      return;
+    }
     setFile(f);
     try {
       // compress via the shared browser pipeline (same as admin media upload)
@@ -261,6 +353,11 @@ function UploadCard({ onSubmitted }: { onSubmitted: () => void }) {
     } catch {
       setPreview("");
     }
+  };
+
+  const clearPick = () => {
+    setFile(null);
+    setPreview("");
   };
 
   const submit = async () => {
@@ -275,9 +372,8 @@ function UploadCard({ onSubmitted }: { onSubmitted: () => void }) {
       if (res.status === 413) throw new Error("too_large");
       if (!res.ok) throw new Error("generic");
       toast({ title: t.memories.submitted });
-      setFile(null);
-      setPreview("");
       setCaption("");
+      clearPick();
       onSubmitted();
     } catch (e) {
       toast({
@@ -289,32 +385,74 @@ function UploadCard({ onSubmitted }: { onSubmitted: () => void }) {
     }
   };
 
-  return (
-    <div className="card-glow relative mb-8 overflow-hidden p-6">
-      <div className="blob end-8 top-6 h-20 w-20 bg-brand/25" />
-      <h2 className="mb-1 flex items-center gap-2 text-lg font-black">
-        <ImagePlus className="h-5 w-5 text-brand" />
-        {t.memories.uploadTitle}
-      </h2>
-      <p className="mb-4 text-xs font-semibold text-muted-foreground">{t.memories.uploadDesc}</p>
+  const guideChips = [
+    { icon: <Images className="h-3 w-3" />, label: t.memories.guidelinesFormat },
+    { icon: <Sparkles className="h-3 w-3" />, label: t.memories.guidelinesAuto },
+    { icon: <Info className="h-3 w-3" />, label: t.memories.guidelinesReview },
+  ];
 
-      <div className="flex flex-col gap-4 sm:flex-row">
-        {/* picker / preview */}
-        <button
-          type="button"
+  return (
+    <div className="card-glow relative mb-8 overflow-hidden p-5 sm:p-6">
+      <div className="blob end-8 top-6 h-20 w-20 bg-brand/25" />
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="flex items-center gap-2 text-lg font-black">
+            <ImagePlus className="h-5 w-5 text-brand" />
+            {t.memories.uploadTitle}
+          </h2>
+          <p className="mt-0.5 text-xs font-semibold text-muted-foreground">{t.memories.uploadDesc}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4 lg:flex-row">
+        {/* picker / preview (supports drag & drop) */}
+        <div
+          className={cn(
+            "group relative flex h-44 w-full shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed transition-all lg:h-auto lg:w-64",
+            dragOver ? "border-brand bg-brand/15" : "border-brand/40 bg-brand/5 hover:border-brand/70 hover:bg-brand/10"
+          )}
           onClick={() => fileRef.current?.click()}
-          className="group relative flex h-40 w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-brand/40 bg-brand/5 transition-colors hover:border-brand/70 hover:bg-brand/10 sm:h-36 sm:w-52"
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            pick(e.dataTransfer.files?.[0] || null);
+          }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") fileRef.current?.click();
+          }}
           aria-label={t.memories.chooseImage}
         >
           {preview ? (
-            <img src={preview} alt="" className="h-full w-full object-cover" />
+            <>
+              <img src={preview} alt="" className="h-full w-full object-cover" />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearPick();
+                }}
+                className="absolute end-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition-colors hover:bg-destructive"
+                aria-label={t.memories.removePick}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </>
           ) : (
-            <span className="flex flex-col items-center gap-1.5 text-brand">
-              <ImagePlus className="h-7 w-7 transition-transform group-hover:scale-110" />
-              <span className="text-[11px] font-black">{t.memories.chooseImage}</span>
+            <span className={cn("flex flex-col items-center gap-1.5 text-brand transition-colors", dragOver && "text-brand-2")}>
+              <ImagePlus className="h-8 w-8 transition-transform group-hover:scale-110" />
+              <span className="px-3 text-center text-[11px] font-black leading-snug">
+                {dragOver ? t.memories.dropHere : t.memories.chooseImage}
+              </span>
             </span>
           )}
-        </button>
+        </div>
         <input
           ref={fileRef}
           type="file"
@@ -324,23 +462,37 @@ function UploadCard({ onSubmitted }: { onSubmitted: () => void }) {
         />
 
         <div className="flex min-w-0 flex-1 flex-col gap-3">
-          <Input
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            maxLength={200}
-            placeholder={t.memories.captionPh}
-            className="rounded-xl font-bold"
-          />
+          <div className="relative">
+            <Input
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              maxLength={200}
+              placeholder={t.memories.captionPh}
+              className="h-11 rounded-xl pe-12 font-bold"
+            />
+            <span className={cn("absolute end-3 top-1/2 -translate-y-1/2 text-[10px] font-bold tabular-nums", caption.length >= 190 ? "text-destructive" : "text-muted-foreground/70")} dir="ltr">
+              {caption.length}/200
+            </span>
+          </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Button
+            <button
               onClick={submit}
               disabled={!preview || busy}
-              className="h-11 rounded-xl bg-brand font-extrabold shadow-md shadow-brand/30 hover:bg-brand/90"
+              className="inline-flex h-11 items-center gap-2 rounded-xl bg-brand px-6 font-extrabold text-white shadow-md shadow-brand/30 transition-all hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 rtl:-scale-x-100" />}
               {busy ? t.memories.uploading : t.memories.upload}
-            </Button>
+            </button>
             <span className="text-[10px] font-bold text-muted-foreground">{t.memories.limitNote}</span>
+          </div>
+          {/* guidelines */}
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {guideChips.map((g, i) => (
+              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-muted/70 px-2.5 py-1 text-[10px] font-bold text-muted-foreground">
+                {g.icon}
+                {g.label}
+              </span>
+            ))}
           </div>
         </div>
       </div>

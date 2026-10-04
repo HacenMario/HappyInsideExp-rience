@@ -47,6 +47,21 @@ export async function PATCH(req: NextRequest) {
       update.studentFee = Math.max(0, Math.round(Number(body.studentFee) || 0));
     }
 
+    // Task 21 — exact camp pin (admin picks it on the map or uses
+    // "detect my location"). null clears the pin (falls back to a
+    // text search of the camp location on Google Maps).
+    for (const k of ["mapLat", "mapLng"] as const) {
+      if (body[k] === undefined) continue;
+      if (body[k] === null || body[k] === "") {
+        update[k] = null;
+      } else {
+        const v = Number(body[k]);
+        if (Number.isFinite(v) && v >= -90 && v <= 90 && v >= -180 && v <= 180) {
+          update[k] = Math.round(v * 1e6) / 1e6; // ~10cm precision
+        }
+      }
+    }
+
     // Camp logo (base64 data URL or null to reset) — max ~2MB encoded
     if (body.logo !== undefined) {
       if (body.logo === null || body.logo === "") {
